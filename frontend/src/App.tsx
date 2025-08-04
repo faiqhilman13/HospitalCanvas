@@ -2,12 +2,15 @@ import { useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import ClinicalCanvas from './components/ClinicalCanvas'
 import PatientSelector from './components/PatientSelector'
+import RoleSelector from './components/RoleSelector'
+import { useCanvasStore } from './stores/canvasStore'
 import './App.css'
 
 const queryClient = new QueryClient()
 
 function App() {
   const [selectedPatientId, setSelectedPatientId] = useState<string>('uncle-tan-001')
+  const { currentRole, setCurrentRole } = useCanvasStore()
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -23,10 +26,16 @@ function App() {
                 Interactive Patient Document Analysis
               </div>
             </div>
-            <PatientSelector
-              selectedPatientId={selectedPatientId}
-              onPatientSelect={setSelectedPatientId}
-            />
+            <div className="flex items-center space-x-4">
+              <RoleSelector
+                currentRole={currentRole}
+                onRoleChange={setCurrentRole}
+              />
+              <PatientSelector
+                selectedPatientId={selectedPatientId}
+                onPatientSelect={setSelectedPatientId}
+              />
+            </div>
           </div>
         </header>
 

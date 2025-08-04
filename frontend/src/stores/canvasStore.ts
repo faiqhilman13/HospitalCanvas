@@ -6,7 +6,8 @@ import type {
   CanvasViewport, 
   CanvasNode, 
   CanvasPosition, 
-  CanvasSize 
+  CanvasSize,
+  UserRole 
 } from '../types'
 
 const initialViewport: CanvasViewport = {
@@ -17,10 +18,11 @@ const initialViewport: CanvasViewport = {
 
 export const useCanvasStore = create<CanvasStore>()(
   devtools(
-    (set) => ({
+    (set, get) => ({
       // State
       patientData: null,
       selectedPatientId: null,
+      currentRole: 'clinician' as UserRole,
       viewport: initialViewport,
       nodes: [],
       connections: [],
@@ -34,6 +36,32 @@ export const useCanvasStore = create<CanvasStore>()(
           nodes: data.canvas_layout.nodes,
           connections: data.canvas_layout.connections,
         })
+      },
+
+      setCurrentRole: (role: UserRole) => {
+        set({ currentRole: role })
+        // Reload canvas layout for new role if patient is selected
+        const state = get()
+        if (state.selectedPatientId) {
+          state.loadRoleBasedLayout(state.selectedPatientId, role)
+        }
+      },
+
+      loadRoleBasedLayout: async (patientId: string, role: UserRole) => {
+        try {
+          const response = await fetch(`http://localhost:8000/api/patients/${patientId}?role=${role}`)
+          if (response.ok) {
+            const data = await response.json()
+            set({
+              patientData: data,
+              viewport: data.canvas_layout.viewport,
+              nodes: data.canvas_layout.nodes,
+              connections: data.canvas_layout.connections,
+            })
+          }
+        } catch (error) {
+          console.error('Failed to load role-based layout:', error)
+        }
       },
 
       updateViewport: (newViewport: Partial<CanvasViewport>) => {

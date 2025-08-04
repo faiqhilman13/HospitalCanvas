@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS canvas_layouts (
     id TEXT PRIMARY KEY,
     patient_id TEXT NOT NULL,
     layout_name TEXT DEFAULT 'default',
+    user_role TEXT DEFAULT 'clinician', -- 'clinician', 'analyst', 'admin'
     viewport_x REAL DEFAULT 0,
     viewport_y REAL DEFAULT 0,
     viewport_zoom REAL DEFAULT 1,
@@ -121,3 +122,79 @@ CREATE INDEX IF NOT EXISTS idx_qa_patient ON qa_pairs(patient_id);
 CREATE INDEX IF NOT EXISTS idx_embeddings_document ON document_embeddings(document_id);
 CREATE INDEX IF NOT EXISTS idx_soap_patient ON soap_notes(patient_id);
 CREATE INDEX IF NOT EXISTS idx_soap_date ON soap_notes(date);
+
+-- User roles - available system roles
+CREATE TABLE IF NOT EXISTS user_roles (
+    id TEXT PRIMARY KEY,
+    role_name TEXT UNIQUE NOT NULL, -- 'clinician', 'analyst', 'admin'
+    display_name TEXT NOT NULL,
+    description TEXT,
+    default_permissions JSON, -- JSON array of permissions
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Population health metrics - cross-patient analytics
+CREATE TABLE IF NOT EXISTS population_metrics (
+    id TEXT PRIMARY KEY,
+    metric_name TEXT NOT NULL, -- 'avg_age', 'common_conditions', 'medication_adherence'
+    metric_type TEXT NOT NULL, -- 'aggregate', 'trend', 'comparison'
+    metric_value TEXT NOT NULL, -- JSON value (number, array, object)
+    time_period TEXT, -- 'daily', 'weekly', 'monthly', 'quarterly', 'yearly'
+    calculated_date DATE NOT NULL,
+    patient_count INTEGER, -- number of patients included in calculation
+    metadata JSON, -- additional metric metadata
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Disease patterns - clinical trend analysis
+CREATE TABLE IF NOT EXISTS disease_patterns (
+    id TEXT PRIMARY KEY,
+    pattern_name TEXT NOT NULL, -- 'diabetes_progression', 'hypertension_trends'
+    pattern_type TEXT NOT NULL, -- 'chronic', 'acute', 'medication_response'
+    condition_codes JSON, -- ICD-10 or other condition codes
+    affected_patients JSON, -- array of patient IDs
+    pattern_data JSON NOT NULL, -- trend data, statistics, correlations
+    confidence_score REAL, -- pattern confidence (0.0-1.0)
+    time_range_start DATE,
+    time_range_end DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Medication analytics - usage patterns and trends
+CREATE TABLE IF NOT EXISTS medication_analytics (
+    id TEXT PRIMARY KEY,
+    medication_name TEXT NOT NULL,
+    medication_class TEXT, -- drug class/category
+    usage_pattern TEXT NOT NULL, -- 'prescribing_trends', 'adherence_rates', 'effectiveness'
+    analytics_data JSON NOT NULL, -- usage statistics, trends, outcomes
+    patient_count INTEGER, -- number of patients in analysis
+    time_period TEXT, -- analysis time period
+    calculated_date DATE NOT NULL,
+    metadata JSON, -- additional analytics metadata
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Layout templates - role-specific default layouts
+CREATE TABLE IF NOT EXISTS layout_templates (
+    id TEXT PRIMARY KEY,
+    template_name TEXT NOT NULL,
+    user_role TEXT NOT NULL, -- 'clinician', 'analyst', 'admin'
+    template_description TEXT,
+    default_nodes JSON NOT NULL, -- default canvas node configuration
+    default_connections JSON, -- default node connections
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Additional indexes for new tables
+CREATE INDEX IF NOT EXISTS idx_canvas_role ON canvas_layouts(user_role);
+CREATE INDEX IF NOT EXISTS idx_canvas_patient_role ON canvas_layouts(patient_id, user_role);
+CREATE INDEX IF NOT EXISTS idx_population_metrics_date ON population_metrics(calculated_date);
+CREATE INDEX IF NOT EXISTS idx_population_metrics_type ON population_metrics(metric_type);
+CREATE INDEX IF NOT EXISTS idx_disease_patterns_type ON disease_patterns(pattern_type);
+CREATE INDEX IF NOT EXISTS idx_disease_patterns_updated ON disease_patterns(updated_at);
+CREATE INDEX IF NOT EXISTS idx_medication_analytics_name ON medication_analytics(medication_name);
+CREATE INDEX IF NOT EXISTS idx_medication_analytics_date ON medication_analytics(calculated_date);
+CREATE INDEX IF NOT EXISTS idx_layout_templates_role ON layout_templates(user_role);

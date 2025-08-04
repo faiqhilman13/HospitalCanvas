@@ -8,6 +8,35 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
   const nodeData = data as SOAPGeneratorNodeData
   const { patient, clinical_data } = nodeData
   
+  // Add null safety check for patient data
+  if (!patient) {
+    return (
+      <div className="canvas-node min-w-[400px] max-w-[500px]">
+        <Handle type="target" position={Position.Top} />
+        
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <FileText className="w-5 h-5 text-gray-400" />
+            <div>
+              <h3 className="font-semibold text-gray-900">SOAP Note Generator</h3>
+              <p className="text-sm text-gray-500">Patient data not available</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-center py-8 text-gray-500">
+          <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+          <p className="text-sm mb-2">Patient data not available for this role</p>
+          <p className="text-xs text-gray-400">
+            SOAP note generation requires patient context
+          </p>
+        </div>
+
+        <Handle type="source" position={Position.Bottom} />
+      </div>
+    )
+  }
+  
   // Use the SOAP note hooks
   const {
     onGenerate,

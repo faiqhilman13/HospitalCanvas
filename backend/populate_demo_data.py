@@ -14,6 +14,7 @@ DB_PATH = Path(__file__).parent.parent / "data" / "clinical_canvas.db"
 
 def get_connection():
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row  # Enable dictionary-like access to rows
     return conn
 
 def populate_uncle_tan():
@@ -177,9 +178,9 @@ def populate_uncle_tan():
     
     layout_id = str(uuid.uuid4())
     conn.execute("""
-        INSERT OR REPLACE INTO canvas_layouts (id, patient_id, layout_name, viewport_x, viewport_y, viewport_zoom, nodes, connections, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (layout_id, patient_id, "default", 0, 0, 1.0, json.dumps(canvas_nodes), json.dumps([]), datetime.now(), datetime.now()))
+        INSERT OR REPLACE INTO canvas_layouts (id, patient_id, layout_name, user_role, viewport_x, viewport_y, viewport_zoom, nodes, connections, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (layout_id, patient_id, "default", "clinician", 0, 0, 1.0, json.dumps(canvas_nodes), json.dumps([]), datetime.now(), datetime.now()))
     
     conn.commit()
     conn.close()
@@ -239,9 +240,9 @@ def populate_mrs_chen():
     
     layout_id = str(uuid.uuid4())
     conn.execute("""
-        INSERT OR REPLACE INTO canvas_layouts (id, patient_id, layout_name, viewport_x, viewport_y, viewport_zoom, nodes, connections, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (layout_id, patient_id, "default", 0, 0, 1.0, json.dumps(canvas_nodes), json.dumps([]), datetime.now(), datetime.now()))
+        INSERT OR REPLACE INTO canvas_layouts (id, patient_id, layout_name, user_role, viewport_x, viewport_y, viewport_zoom, nodes, connections, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (layout_id, patient_id, "default", "clinician", 0, 0, 1.0, json.dumps(canvas_nodes), json.dumps([]), datetime.now(), datetime.now()))
     
     conn.commit()
     conn.close()
@@ -301,27 +302,211 @@ def populate_mr_kumar():
     
     layout_id = str(uuid.uuid4())
     conn.execute("""
-        INSERT OR REPLACE INTO canvas_layouts (id, patient_id, layout_name, viewport_x, viewport_y, viewport_zoom, nodes, connections, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (layout_id, patient_id, "default", 0, 0, 1.0, json.dumps(canvas_nodes), json.dumps([]), datetime.now(), datetime.now()))
+        INSERT OR REPLACE INTO canvas_layouts (id, patient_id, layout_name, user_role, viewport_x, viewport_y, viewport_zoom, nodes, connections, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (layout_id, patient_id, "default", "clinician", 0, 0, 1.0, json.dumps(canvas_nodes), json.dumps([]), datetime.now(), datetime.now()))
     
     conn.commit()
     conn.close()
     print("Mr. Kumar case populated successfully")
+
+def populate_layout_templates():
+    """Populate role-specific layout templates"""
+    conn = get_connection()
+    
+    # Clinician Template (patient-focused care)
+    clinician_template = {
+        "id": str(uuid.uuid4()),
+        "template_name": "Clinician Default",
+        "user_role": "clinician",
+        "description": "Patient-focused clinical workflow with SOAP notes and timeline",
+        "default_nodes": [
+            {
+                "id": "patient-summary", 
+                "type": "patientSummary",
+                "position": {"x": 50, "y": 50}
+            },
+            {
+                "id": "vitals-chart",
+                "type": "vitalsChart", 
+                "position": {"x": 400, "y": 50}
+            },
+            {
+                "id": "soap-generator",
+                "type": "SOAPGenerator",
+                "position": {"x": 750, "y": 50}
+            },
+            {
+                "id": "patient-timeline",
+                "type": "Timeline",
+                "position": {"x": 50, "y": 300}
+            }
+        ],
+        "default_connections": []
+    }
+    
+    # Analyst Template (population health focus)
+    analyst_template = {
+        "id": str(uuid.uuid4()),
+        "template_name": "Analyst Dashboard",
+        "user_role": "analyst", 
+        "description": "Population health analytics and disease pattern analysis",
+        "default_nodes": [
+            {
+                "id": "analytics-report",
+                "type": "analyticsReport",
+                "position": {"x": 50, "y": 50},
+                "data": {
+                    "title": "Population Health Analytics",
+                    "role": "analyst"
+                }
+            }
+        ],
+        "default_connections": []
+    }
+    
+    # Admin Template (system management focus)
+    admin_template = {
+        "id": str(uuid.uuid4()),
+        "template_name": "System Administration",
+        "user_role": "admin",
+        "description": "System monitoring and user management tools",
+        "default_nodes": [
+            {
+                "id": "system-admin",
+                "type": "systemAdmin", 
+                "position": {"x": 50, "y": 50},
+                "data": {
+                    "title": "System Management Dashboard"
+                }
+            }
+        ],
+        "default_connections": []
+    }
+    
+    # Insert layout templates
+    for template in [clinician_template, analyst_template, admin_template]:
+        conn.execute("""
+            INSERT OR REPLACE INTO layout_templates 
+            (id, template_name, user_role, template_description, default_nodes, default_connections, is_active, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            template["id"],
+            template["template_name"],
+            template["user_role"], 
+            template["description"],
+            json.dumps(template["default_nodes"]),
+            json.dumps(template["default_connections"]),
+            True,
+            datetime.now(),
+            datetime.now()
+        ))
+    
+    conn.commit()
+    conn.close()
+    print("Layout templates populated successfully")
+
+def populate_role_specific_layouts():
+    """Create role-specific canvas layouts for all patients"""
+    conn = get_connection()
+    
+    # Get all patients
+    patients = conn.execute("SELECT id, name FROM patients").fetchall()
+    
+    for patient_row in patients:
+        patient_id = patient_row["id"]
+        patient_name = patient_row["name"]
+        
+        # Analyst layout - population health focus
+        analyst_layout = {
+            "id": str(uuid.uuid4()),
+            "patient_id": patient_id,
+            "user_role": "analyst",
+            "layout_name": "analyst_view",
+            "nodes": [
+                {
+                    "id": "analytics-report",
+                    "type": "analyticsReport",
+                    "position": {"x": 50, "y": 50},
+                    "data": {
+                        "title": f"Population Analytics - {patient_name}",
+                        "role": "analyst"
+                    }
+                }
+            ],
+            "connections": [],
+            "viewport": {"x": 0, "y": 0, "zoom": 1}
+        }
+        
+        # Admin layout - system management focus
+        admin_layout = {
+            "id": str(uuid.uuid4()),
+            "patient_id": patient_id,
+            "user_role": "admin", 
+            "layout_name": "admin_view",
+            "nodes": [
+                {
+                    "id": "system-admin",
+                    "type": "systemAdmin",
+                    "position": {"x": 50, "y": 50},
+                    "data": {
+                        "title": "System Administration Dashboard"
+                    }
+                }
+            ],
+            "connections": [],
+            "viewport": {"x": 0, "y": 0, "zoom": 1}
+        }
+        
+        # Insert role-specific layouts
+        for layout in [analyst_layout, admin_layout]:
+            conn.execute("""
+                INSERT OR REPLACE INTO canvas_layouts 
+                (id, patient_id, layout_name, user_role, viewport_x, viewport_y, viewport_zoom, nodes, connections, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                layout["id"],
+                layout["patient_id"],
+                layout["layout_name"],
+                layout["user_role"],
+                layout["viewport"]["x"],
+                layout["viewport"]["y"], 
+                layout["viewport"]["zoom"],
+                json.dumps(layout["nodes"]),
+                json.dumps(layout["connections"]),
+                datetime.now(),
+                datetime.now()
+            ))
+    
+    conn.commit()
+    conn.close()
+    print("Role-specific canvas layouts populated successfully")
 
 def main():
     """Populate all demo patients"""
     print("Populating demo patient data...")
     
     try:
+        # Populate base patient data
         populate_uncle_tan()
         populate_mrs_chen()
         populate_mr_kumar()
+        
+        # Populate layout templates
+        populate_layout_templates()
+        
+        # Populate role-specific layouts
+        populate_role_specific_layouts()
+        
         print("\nAll demo patients populated successfully!")
         print("Available patients:")
         print("  - Uncle Tan (uncle-tan-001) - CKD Stage 4")
         print("  - Mrs. Chen (mrs-chen-002) - Type 2 Diabetes")
         print("  - Mr. Kumar (mr-kumar-003) - Post-MI")
+        print("\nRole-specific layouts created:")
+        print("  - Clinician: Patient-focused clinical workflow")
+        print("  - Analyst: Population health analytics dashboard")
+        print("  - Admin: System management dashboard")
         
     except Exception as e:
         print(f"Error populating data: {e}")

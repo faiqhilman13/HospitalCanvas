@@ -68,6 +68,56 @@ class SOAPGenerateRequest(BaseModel):
     patient_id: str
 
 
+class UserRole(BaseModel):
+    id: str
+    role_name: str
+    display_name: str
+    description: str
+
+
+class LayoutTemplate(BaseModel):
+    id: str
+    template_name: str
+    user_role: str
+    template_description: str
+    default_nodes: List[Dict[str, Any]]
+    default_connections: List[Dict[str, Any]]
+
+
+class PopulationMetric(BaseModel):
+    id: str
+    metric_name: str
+    metric_type: str
+    metric_value: Any
+    time_period: Optional[str]
+    calculated_date: str
+    patient_count: int
+    metadata: Optional[Dict[str, Any]]
+
+
+class DiseasePattern(BaseModel):
+    id: str
+    pattern_name: str
+    pattern_type: str
+    condition_codes: List[str]
+    affected_patients: List[str]
+    pattern_data: Dict[str, Any]
+    confidence_score: float
+    time_range_start: str
+    time_range_end: str
+
+
+class MedicationAnalytic(BaseModel):
+    id: str
+    medication_name: str
+    medication_class: Optional[str]
+    usage_pattern: str
+    analytics_data: Dict[str, Any]
+    patient_count: int
+    time_period: str
+    calculated_date: str
+
+
 # Database initialization
 def init_database():
     """Initialize SQLite database with schema"""
@@ -158,8 +208,8 @@ async def get_patients():
 
 
 @app.get("/api/patients/{patient_id}", response_model=PatientDetail)
-async def get_patient_detail(patient_id: str):
-    """Get detailed patient data including canvas layout"""
+async def get_patient_detail(patient_id: str, role: str = "clinician"):
+    """Get detailed patient data including canvas layout for specific role"""
     conn = get_db_connection()
     try:
         # Get patient basic info
@@ -172,22 +222,45 @@ async def get_patient_detail(patient_id: str):
         if not patient_row:
             raise HTTPException(status_code=404, detail="Patient not found")
         
-        # Get canvas layout
+        # Get role-specific canvas layout
         layout_cursor = conn.execute(
-            "SELECT nodes, connections, viewport_x, viewport_y, viewport_zoom FROM canvas_layouts WHERE patient_id = ? ORDER BY updated_at DESC LIMIT 1",
-            (patient_id,)
+            "SELECT nodes, connections, viewport_x, viewport_y, viewport_zoom FROM canvas_layouts WHERE patient_id = ? AND user_role = ? ORDER BY updated_at DESC LIMIT 1",
+            (patient_id, role)
         )
         layout_row = layout_cursor.fetchone()
         
-        canvas_layout = {
-            "nodes": json.loads(layout_row["nodes"]) if layout_row and layout_row["nodes"] else [],
-            "connections": json.loads(layout_row["connections"]) if layout_row and layout_row["connections"] else [],
-            "viewport": {
-                "x": layout_row["viewport_x"] if layout_row else 0,
-                "y": layout_row["viewport_y"] if layout_row else 0,
-                "zoom": layout_row["viewport_zoom"] if layout_row else 1
+        # If no role-specific layout, get default layout template
+        if not layout_row:
+            template_cursor = conn.execute(
+                "SELECT default_nodes, default_connections FROM layout_templates WHERE user_role = ? AND is_active = 1 ORDER BY created_at DESC LIMIT 1",
+                (role,)
+            )
+            template_row = template_cursor.fetchone()
+        
+        # Use layout or template data
+        if layout_row:
+            canvas_layout = {
+                "nodes": json.loads(layout_row["nodes"]) if layout_row["nodes"] else [],
+                "connections": json.loads(layout_row["connections"]) if layout_row["connections"] else [],
+                "viewport": {
+                    "x": layout_row["viewport_x"] if layout_row else 0,
+                    "y": layout_row["viewport_y"] if layout_row else 0,
+                    "zoom": layout_row["viewport_zoom"] if layout_row else 1
+                }
             }
-        }
+        elif template_row:
+            canvas_layout = {
+                "nodes": json.loads(template_row["default_nodes"]) if template_row["default_nodes"] else [],
+                "connections": json.loads(template_row["default_connections"]) if template_row["default_connections"] else [],
+                "viewport": {"x": 0, "y": 0, "zoom": 1}
+            }
+        else:
+            # Default empty layout
+            canvas_layout = {
+                "nodes": [],
+                "connections": [],
+                "viewport": {"x": 0, "y": 0, "zoom": 1}
+            }
         
         # Get AI summary
         summary_cursor = conn.execute(
@@ -682,6 +755,321 @@ def determine_document_type(filename: str, ocr_text: str) -> str:
         return 'referral'
     else:
         return 'clinical_document'
+
+
+# ============= ROLE-BASED LAYOUT ENDPOINTS =============
+
+@app.get("/api/roles", response_model=List[UserRole])
+async def get_user_roles():
+    """Get all available user roles"""
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute("SELECT id, role_name, display_name, description FROM user_roles ORDER BY role_name")
+        roles = [
+            UserRole(
+                id=row["id"],
+                role_name=row["role_name"],
+                display_name=row["display_name"],
+                description=row["description"] or ""
+            )
+            for row in cursor.fetchall()
+        ]
+        return roles
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        conn.close()
+
+
+@app.get("/api/layout-templates/{role}", response_model=List[LayoutTemplate])
+async def get_layout_templates(role: str):
+    """Get layout templates for a specific role"""
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute("""
+            SELECT id, template_name, user_role, template_description, default_nodes, default_connections
+            FROM layout_templates 
+            WHERE user_role = ? AND is_active = 1
+            ORDER BY template_name
+        """, (role,))
+        
+        templates = []
+        for row in cursor.fetchall():
+            template = LayoutTemplate(
+                id=row["id"],
+                template_name=row["template_name"],
+                user_role=row["user_role"],
+                template_description=row["template_description"] or "",
+                default_nodes=json.loads(row["default_nodes"]) if row["default_nodes"] else [],
+                default_connections=json.loads(row["default_connections"]) if row["default_connections"] else []
+            )
+            templates.append(template)
+        
+        return templates
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        conn.close()
+
+
+@app.post("/api/patients/{patient_id}/layout/{role}")
+async def save_patient_layout(patient_id: str, role: str, layout: Dict[str, Any]):
+    """Save patient-specific canvas layout for a role"""
+    import uuid
+    from datetime import datetime
+    
+    conn = get_db_connection()
+    try:
+        # Check if patient exists
+        patient_cursor = conn.execute("SELECT id FROM patients WHERE id = ?", (patient_id,))
+        if not patient_cursor.fetchone():
+            raise HTTPException(status_code=404, detail="Patient not found")
+        
+        # Save or update layout
+        layout_id = str(uuid.uuid4())
+        current_time = datetime.utcnow().isoformat()
+        
+        conn.execute("""
+            INSERT OR REPLACE INTO canvas_layouts 
+            (id, patient_id, user_role, nodes, connections, viewport_x, viewport_y, viewport_zoom, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            layout_id,
+            patient_id,
+            role,
+            json.dumps(layout.get("nodes", [])),
+            json.dumps(layout.get("connections", [])),
+            layout.get("viewport", {}).get("x", 0),
+            layout.get("viewport", {}).get("y", 0),
+            layout.get("viewport", {}).get("zoom", 1),
+            current_time
+        ))
+        conn.commit()
+        
+        return {"success": True, "message": "Layout saved successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Save error: {str(e)}")
+    finally:
+        conn.close()
+
+
+# ============= POPULATION ANALYTICS ENDPOINTS =============
+
+@app.get("/api/analytics/population/metrics", response_model=List[PopulationMetric])
+async def get_population_metrics(metric_type: Optional[str] = None, time_period: Optional[str] = None):
+    """Get population health metrics"""
+    conn = get_db_connection()
+    try:
+        query = "SELECT id, metric_name, metric_type, metric_value, time_period, calculated_date, patient_count, metadata FROM population_metrics WHERE 1=1"
+        params = []
+        
+        if metric_type:
+            query += " AND metric_type = ?"
+            params.append(metric_type)
+        
+        if time_period:
+            query += " AND time_period = ?"
+            params.append(time_period)
+        
+        query += " ORDER BY calculated_date DESC"
+        
+        cursor = conn.execute(query, params)
+        metrics = []
+        for row in cursor.fetchall():
+            metric = PopulationMetric(
+                id=row["id"],
+                metric_name=row["metric_name"],
+                metric_type=row["metric_type"],
+                metric_value=json.loads(row["metric_value"]) if row["metric_value"] else None,
+                time_period=row["time_period"],
+                calculated_date=row["calculated_date"],
+                patient_count=row["patient_count"],
+                metadata=json.loads(row["metadata"]) if row["metadata"] else None
+            )
+            metrics.append(metric)
+        
+        return metrics
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        conn.close()
+
+
+@app.get("/api/analytics/disease-patterns", response_model=List[DiseasePattern])
+async def get_disease_patterns(pattern_type: Optional[str] = None):
+    """Get disease patterns and trends"""
+    conn = get_db_connection()
+    try:
+        query = """
+            SELECT id, pattern_name, pattern_type, condition_codes, affected_patients, 
+                   pattern_data, confidence_score, time_range_start, time_range_end
+            FROM disease_patterns WHERE 1=1
+        """
+        params = []
+        
+        if pattern_type:
+            query += " AND pattern_type = ?"
+            params.append(pattern_type)
+        
+        query += " ORDER BY confidence_score DESC, updated_at DESC"
+        
+        cursor = conn.execute(query, params)
+        patterns = []
+        for row in cursor.fetchall():
+            pattern = DiseasePattern(
+                id=row["id"],
+                pattern_name=row["pattern_name"],
+                pattern_type=row["pattern_type"],
+                condition_codes=json.loads(row["condition_codes"]) if row["condition_codes"] else [],
+                affected_patients=json.loads(row["affected_patients"]) if row["affected_patients"] else [],
+                pattern_data=json.loads(row["pattern_data"]) if row["pattern_data"] else {},
+                confidence_score=row["confidence_score"] or 0.0,
+                time_range_start=row["time_range_start"],
+                time_range_end=row["time_range_end"]
+            )
+            patterns.append(pattern)
+        
+        return patterns
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        conn.close()
+
+
+@app.get("/api/analytics/medications", response_model=List[MedicationAnalytic])
+async def get_medication_analytics(medication_name: Optional[str] = None, usage_pattern: Optional[str] = None):
+    """Get medication usage analytics"""
+    conn = get_db_connection()
+    try:
+        query = """
+            SELECT id, medication_name, medication_class, usage_pattern, analytics_data,
+                   patient_count, time_period, calculated_date
+            FROM medication_analytics WHERE 1=1
+        """
+        params = []
+        
+        if medication_name:
+            query += " AND LOWER(medication_name) LIKE LOWER(?)"
+            params.append(f"%{medication_name}%")
+        
+        if usage_pattern:
+            query += " AND usage_pattern = ?"
+            params.append(usage_pattern)
+        
+        query += " ORDER BY calculated_date DESC, patient_count DESC"
+        
+        cursor = conn.execute(query, params)
+        analytics = []
+        for row in cursor.fetchall():
+            analytic = MedicationAnalytic(
+                id=row["id"],
+                medication_name=row["medication_name"],
+                medication_class=row["medication_class"],
+                usage_pattern=row["usage_pattern"],
+                analytics_data=json.loads(row["analytics_data"]) if row["analytics_data"] else {},
+                patient_count=row["patient_count"],
+                time_period=row["time_period"],
+                calculated_date=row["calculated_date"]
+            )
+            analytics.append(analytic)
+        
+        return analytics
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        conn.close()
+
+
+@app.get("/api/analytics/dashboard/{role}")
+async def get_role_dashboard_data(role: str):
+    """Get aggregated dashboard data for a specific role"""
+    conn = get_db_connection()
+    try:
+        dashboard_data = {}
+        
+        if role == "analyst":
+            # Population metrics summary
+            metrics_cursor = conn.execute("""
+                SELECT metric_type, COUNT(*) as count, AVG(CAST(patient_count AS REAL)) as avg_patients
+                FROM population_metrics 
+                WHERE calculated_date >= date('now', '-30 days')
+                GROUP BY metric_type
+            """)
+            dashboard_data["population_summary"] = [dict(row) for row in metrics_cursor.fetchall()]
+            
+            # Recent disease patterns
+            patterns_cursor = conn.execute("""
+                SELECT pattern_name, pattern_type, confidence_score, 
+                       json_array_length(affected_patients) as patient_count
+                FROM disease_patterns 
+                WHERE confidence_score > 0.7
+                ORDER BY updated_at DESC LIMIT 10
+            """)
+            dashboard_data["recent_patterns"] = [dict(row) for row in patterns_cursor.fetchall()]
+            
+            # Top medications by usage
+            meds_cursor = conn.execute("""
+                SELECT medication_name, medication_class, patient_count, usage_pattern
+                FROM medication_analytics 
+                WHERE calculated_date >= date('now', '-30 days')
+                ORDER BY patient_count DESC LIMIT 15
+            """)
+            dashboard_data["top_medications"] = [dict(row) for row in meds_cursor.fetchall()]
+            
+        elif role == "admin":
+            # System statistics
+            stats_cursor = conn.execute("""
+                SELECT 
+                    (SELECT COUNT(*) FROM patients) as total_patients,
+                    (SELECT COUNT(*) FROM documents) as total_documents,
+                    (SELECT COUNT(*) FROM soap_notes) as total_soap_notes,
+                    (SELECT COUNT(*) FROM canvas_layouts) as total_layouts
+            """)
+            dashboard_data["system_stats"] = dict(stats_cursor.fetchone())
+            
+            # Recent activity
+            activity_cursor = conn.execute("""
+                SELECT 'document' as type, filename as name, created_at
+                FROM documents 
+                WHERE created_at >= datetime('now', '-7 days')
+                UNION ALL
+                SELECT 'soap_note' as type, 'SOAP Note' as name, created_at
+                FROM soap_notes 
+                WHERE created_at >= datetime('now', '-7 days')
+                ORDER BY created_at DESC LIMIT 20
+            """)
+            dashboard_data["recent_activity"] = [dict(row) for row in activity_cursor.fetchall()]
+            
+        elif role == "clinician":
+            # Patient summary stats
+            patient_cursor = conn.execute("""
+                SELECT 
+                    COUNT(*) as total_patients,
+                    AVG(age) as avg_age,
+                    COUNT(CASE WHEN gender = 'Male' THEN 1 END) as male_count,
+                    COUNT(CASE WHEN gender = 'Female' THEN 1 END) as female_count
+                FROM patients
+            """)
+            dashboard_data["patient_summary"] = dict(patient_cursor.fetchone())
+            
+            # Recent SOAP notes
+            soap_cursor = conn.execute("""
+                SELECT s.id, s.patient_id, p.name as patient_name, s.date, s.generated_by
+                FROM soap_notes s
+                JOIN patients p ON s.patient_id = p.id
+                ORDER BY s.date DESC LIMIT 10
+            """)
+            dashboard_data["recent_soap_notes"] = [dict(row) for row in soap_cursor.fetchall()]
+        
+        return dashboard_data
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        conn.close()
 
 
 if __name__ == "__main__":

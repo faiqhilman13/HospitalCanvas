@@ -17,6 +17,35 @@ import type { CanvasNodeProps, PatientTimelineNodeData, TimelineEvent } from '..
 const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
   const { events, patient, dateRange } = data as PatientTimelineNodeData
   
+  // Add null safety check for patient data  
+  if (!patient || !events) {
+    return (
+      <div className="canvas-node min-w-[450px] max-w-[600px]">
+        <Handle type="target" position={Position.Top} />
+        
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <Calendar className="w-5 h-5 text-gray-400" />
+            <div>
+              <h3 className="font-semibold text-gray-900">Patient Timeline</h3>
+              <p className="text-sm text-gray-500">Patient data not available</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-center py-8 text-gray-500">
+          <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+          <p className="text-sm mb-2">Timeline data not available for this role</p>
+          <p className="text-xs text-gray-400">
+            Patient timeline requires clinical context
+          </p>
+        </div>
+
+        <Handle type="source" position={Position.Bottom} />
+      </div>
+    )
+  }
+  
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set())
   const [selectedEventTypes, setSelectedEventTypes] = useState<Set<string>>(new Set(['visit', 'lab', 'vital', 'document', 'procedure', 'medication']))
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')

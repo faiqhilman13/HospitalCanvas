@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import type { PatientData } from '../types'
+import type { PatientData, UserRole } from '../types'
 
 // Mock API base URL - will be replaced with actual backend
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
@@ -318,10 +318,10 @@ const mockPatientData: Record<string, PatientData> = {
   }
 }
 
-async function fetchPatientData(patientId: string): Promise<PatientData> {
+async function fetchPatientData(patientId: string, role: UserRole = 'clinician'): Promise<PatientData> {
   try {
-    // Try to fetch from real API first
-    const response = await fetch(`${API_BASE_URL}/patients/${patientId}`)
+    // Try to fetch from real API first with role parameter
+    const response = await fetch(`${API_BASE_URL}/patients/${patientId}?role=${role}`)
     
     if (!response.ok) {
       throw new Error(`API Error: ${response.status} ${response.statusText}`)
@@ -477,10 +477,10 @@ function determineFlag(value: string, referenceRange: string): 'low' | 'high' | 
   return 'normal'
 }
 
-export function usePatientData(patientId: string) {
+export function usePatientData(patientId: string, role: UserRole = 'clinician') {
   return useQuery({
-    queryKey: ['patient', patientId],
-    queryFn: () => fetchPatientData(patientId),
+    queryKey: ['patient', patientId, role],
+    queryFn: () => fetchPatientData(patientId, role),
     enabled: !!patientId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)

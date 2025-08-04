@@ -91,6 +91,8 @@ export type CanvasNodeType =
   | 'labResults'
   | 'Timeline'
   | 'SOAPGenerator'
+  | 'analyticsReport'
+  | 'systemAdmin'
 
 export interface CanvasNode {
   id: string
@@ -141,12 +143,15 @@ export interface PatientListResponse {
 export interface CanvasStore {
   patientData: PatientData | null
   selectedPatientId: string | null
+  currentRole: UserRole
   viewport: CanvasViewport
   nodes: CanvasNode[]
   connections: CanvasConnection[]
   
   // Actions
   setPatientData: (data: PatientData) => void
+  setCurrentRole: (role: UserRole) => void
+  loadRoleBasedLayout: (patientId: string, role: UserRole) => Promise<void>
   updateViewport: (viewport: Partial<CanvasViewport>) => void
   updateNodePosition: (nodeId: string, position: CanvasPosition) => void
   updateNodeSize: (nodeId: string, size: CanvasSize) => void
@@ -261,4 +266,71 @@ export interface PatientTimelineNodeData {
     start: string
     end: string
   }
+}
+
+// Role-Based Access Control Types
+export type UserRole = 'clinician' | 'analyst' | 'admin'
+
+export interface RoleInfo {
+  id: UserRole
+  name: string
+  description: string
+  icon: string
+}
+
+export interface PopulationMetric {
+  metric_name: string
+  value: number
+  trend_direction: 'up' | 'down' | 'stable'
+  change_percentage: number
+  period: string
+}
+
+export interface DiseasePattern {
+  pattern_name: string
+  confidence_score: number
+  affected_patients: number
+  key_indicators: string[]
+  trend_data: Array<{
+    date: string
+    prevalence: number
+  }>
+}
+
+export interface MedicationAnalytic {
+  medication_name: string
+  usage_count: number
+  effectiveness_score: number
+  side_effects_reported: number
+  cost_analysis: {
+    average_cost: number
+    total_prescribed: number
+  }
+}
+
+export interface AnalyticsData {
+  population_metrics: PopulationMetric[]
+  disease_patterns: DiseasePattern[]
+  medications: MedicationAnalytic[]
+}
+
+export interface AnalyticsReportNodeData {
+  title: string
+  data: AnalyticsData
+  role: UserRole
+}
+
+export interface SystemAdminNodeData {
+  system_metrics: {
+    active_users: number
+    total_patients: number
+    documents_processed: number
+    uptime_percentage: number
+  },
+  recent_activity: Array<{
+    timestamp: string
+    user: string
+    action: string
+    resource: string
+  }>
 }
