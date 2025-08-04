@@ -1,189 +1,157 @@
-# AI-Powered Clinical Canvas - TODO Status
+# AI-Powered Clinical Canvas - PRD-V2 Implementation
 
 ## 📊 Project Progress Overview
 
-**Status:** 40% Complete  
-**Phase:** Frontend Complete, Backend In Progress  
-**Next Priority:** Backend API Development  
+**Status:** 60% Complete (PRD-V2 Compliance)  
+**Phase:** Core MVP → PRD-V2 Missing Features  
+**Next Priority:** SOAP Generator & Timeline Modules  
 
 ---
 
-## ✅ COMPLETED
+## ✅ COMPLETED - MVP FOUNDATION
 
-### Foundation & Architecture (100% Complete)
-- [x] **Project Structure Setup**
-  - Created frontend/, backend/, ai-pipeline/, data/ directories
-  - Set up .gitignore and README documentation
-  - Database schema design complete (SQLite)
-  - JSON API schemas defined
+### Core Platform (100% Complete)
+- [x] **Interactive Canvas System**
+  - React Flow with drag-and-drop modules ✅
+  - 5 custom node types: Patient Summary, Vitals Chart, Document Viewer, AI Q&A, Lab Results ✅
+  - Infinite canvas with pan/zoom, minimap, controls ✅
+  - Canvas layout persistence in database ✅
 
-### Frontend Development (100% Complete)
-- [x] **React Canvas Application**
-  - Vite + TypeScript + Tailwind CSS setup
-  - React Flow integration for canvas functionality
-  - Zustand store for state management
-  - React Query for API data fetching
+- [x] **Backend Infrastructure**
+  - FastAPI with SQLite database ✅
+  - RAG pipeline with LLM integration ✅
+  - 3 demo patients with comprehensive clinical data ✅
+  - Q&A system with source citations ✅
 
-- [x] **Core Components**
-  - PatientSelector dropdown with demo patients
-  - ClinicalCanvas main container
-  - Custom node types (5 total):
-    - PatientSummaryNode - Clinical summary with urgency indicators
-    - VitalsChartNode - Interactive Chart.js charts for trends
-    - DocumentViewerNode - PDF viewer with zoom/navigation
-    - AIQuestionBoxNode - Q&A interface with citations
-    - LabResultsNode - Collapsible lab results display
-
-- [x] **Canvas Features**
-  - Infinite canvas with pan/zoom (react-flow)
-  - Drag & drop node positioning
-  - Custom styling with clinical theme
-  - Minimap and controls
-  - Mock patient data integration
-
-- [x] **Demo Data Integration**
-  - Uncle Tan patient case with complete data
-  - Mock API responses for development
-  - Pre-configured canvas layouts
-  - Sample clinical data (vitals, labs, documents)
+- [x] **AI Integration**
+  - Document processing and chunking ✅
+  - Vector search and retrieval ✅
+  - Ollama/LLaMA 3 integration with fallbacks ✅
+  - Clinical context-aware responses ✅
 
 ---
 
-## 🔄 IN PROGRESS
+## 🚨 MISSING PRD-V2 FEATURES - HIGH PRIORITY
 
-### Backend API Development (25% Complete)
-- [ ] **FastAPI Setup**
-  - Python virtual environment
-  - FastAPI + SQLite configuration
-  - CORS setup for frontend integration
-  - Database initialization scripts
+### 👩‍⚕️ Dr. Aisha (Clinician) Features
+- [ ] **SOAP Note Generator Module** 
+  - Create new canvas node type: `SOAPGeneratorNode`
+  - AI-generated SOAP notes (Subjective, Objective, Assessment, Plan)
+  - Editable text fields with patient data integration
+  - Save/export functionality to database
 
----
+- [ ] **Enhanced Patient Summarizer**
+  - Upgrade current PatientSummaryNode with contextual intelligence
+  - Multi-visit comparison and change detection
+  - Critical value flagging and alerts
 
-## 📋 PENDING - HIGH PRIORITY
+### 📊 Core Platform Missing
+- [ ] **Patient Timeline Module**
+  - Create `PatientTimelineNode` component
+  - Chronological view of visits, labs, vitals, documents
+  - Interactive timeline with clickable events
+  - Temporal relationship visualization
 
-### Backend Core Features
-- [ ] **API Endpoints** 
-  - `GET /api/patients` - List available patients
-  - `GET /api/patients/{id}` - Get patient data with canvas layout
-  - `POST /api/patients/{id}/ask` - Q&A with citations
-  - Database CRUD operations
-
-- [ ] **Demo Patient Data**
-  - Uncle Tan complete clinical case
-  - Mrs. Chen diabetes case
-  - Mr. Kumar cardiovascular case
-  - PDF document placeholders
-
-### AI Integration Pipeline
-- [ ] **Document Processing**
-  - PDF text extraction (pdfplumber)
-  - Text chunking for embeddings
-  - FAISS vector store setup
-  - Ollama + LLaMA 3 integration
-
-- [ ] **RAG System**
-  - Pre-compute embeddings for demo documents
-  - Question answering with source citations
-  - Confidence scoring for responses
+- [ ] **Document Upload & OCR System**
+  - File upload API endpoint in FastAPI
+  - OCR processing pipeline (Tesseract integration)
+  - Upload interface in DocumentViewerNode
+  - Document metadata management
 
 ---
 
 ## 📋 PENDING - MEDIUM PRIORITY
 
-### Enhanced Canvas Features
-- [ ] **Advanced Interactions**
-  - Node resizing handles
-  - Connection lines between nodes
-  - Context menus and toolbars
-  - Undo/redo functionality
+### 📊 Siti (Analyst) Features  
+- [ ] **Role-Based Access Control**
+  - User role selection: Clinician/Analyst/Admin
+  - Role-specific canvas layouts and modules
+  - Different interface views per persona
 
-- [ **Document Integration**
-  - PDF highlighting coordination with Q&A
-  - Source text highlighting in viewer
+- [ ] **Analytics Dashboard**
+  - Structured data extraction from clinical notes
+  - Population-level trend analysis
+  - Disease pattern recognition
+  - Medication usage reporting
+
+### 🔗 Enhanced Integration
+- [ ] **Advanced Document Features**
+  - Text highlighting in PDF viewer
+  - Citation-to-document linking
+  - Source highlighting from AI responses
   - Page navigation from citations
-
-### Performance & Polish
-- [ ] **Demo Choreography**
-  - Smooth patient switching transitions
-  - Loading states and animations
-  - Pre-arranged "wow factor" layouts
-  - Presentation mode features
 
 ---
 
 ## 📋 PENDING - LOW PRIORITY
 
-### Deployment & Production
-- [ ] **Deployment Configuration**
-  - Netlify setup for frontend
-  - Railway setup for backend
-  - Environment variables configuration
-  - Production build optimization
+### 🎨 Enhanced Canvas Features
+- [ ] **Advanced Interactions**
+  - Node resizing handles
+  - Connection lines between related nodes
+  - Context menus and toolbars
+  - Better drag-and-drop UX
 
-- [ ] **Advanced Features**
-  - Canvas export as image/PDF
-  - Print-friendly layouts
-  - Keyboard shortcuts
-  - Mobile responsiveness
-
-- [ ] **Additional Capabilities**
-  - Multiple document support
-  - Timeline view components
-  - Advanced chart types
-  - User preferences
+### 🚀 Production Polish
+- [ ] **Performance & UX**
+  - Loading states and animations
+  - Smooth patient switching transitions
+  - Error boundaries and graceful failures
+  - Mobile responsiveness improvements
 
 ---
 
-## 🎯 Next Immediate Actions
+## 🎯 PRD-V2 Implementation Roadmap
 
-1. **Complete Backend Setup** (Next 2-4 hours)
-   - Set up FastAPI with SQLite
-   - Create patient data API endpoints
-   - Test frontend-backend integration
+### Phase 1: Core Missing Features (6-8 hours)
+1. **SOAP Note Generator** (3-4 hours) - Critical for clinician workflow
+2. **Patient Timeline Module** (2-3 hours) - Essential for temporal context  
+3. **Document Upload/OCR** (1-2 hours) - Needed for real clinical data
 
-2. **Demo Data Population** (Next 1-2 hours)
-   - Insert Uncle Tan case into database
-   - Create additional demo patients
-   - Test canvas loading with real API
+### Phase 2: Multi-Persona Support (4-6 hours)
+1. **Role-Based Views** (2-3 hours) - Different interfaces per user type
+2. **Analyst Dashboard** (2-3 hours) - Population insights for Siti persona
 
-3. **AI Pipeline Integration** (Next 3-4 hours)
-   - Set up Ollama for local LLM
-   - Implement basic Q&A functionality
-   - Add source citation features
+### Phase 3: Enhanced Integration (2-3 hours)
+1. **Document Highlighting** (1-2 hours) - Visual citation links
+2. **Advanced Canvas Features** (1 hour) - Better UX interactions
 
-## 🚀 Demo Readiness Checklist
+## 🚀 PRD-V2 Success Metrics
 
-### Must-Have for Demo (48-72 hours)
-- [ ] Backend API fully functional
-- [ ] 3 demo patients with complete data
-- [ ] Q&A with citation highlighting working
-- [ ] Smooth canvas interactions
-- [ ] Deployed to public URL
+### Must Achieve:
+- [ ] SOAP note generation with >85% clinician usability
+- [ ] 50% reduction in chart review time simulation  
+- [ ] Multi-persona interface support (Clinician/Analyst/Admin)
+- [ ] Document upload with OCR processing
+- [ ] Patient timeline with temporal event tracking
 
-### Nice-to-Have for Demo
-- [ ] Advanced canvas features (resize, connections)
-- [ ] Multiple document support
-- [ ] Enhanced animations and transitions
-- [ ] Export capabilities
+### Persona-Specific Goals:
+- **Dr. Aisha**: Auto-generated SOAP notes, contextual patient summaries
+- **Uncle Tan**: (Indirect) Better-informed clinicians via complete data view
+- **Siti**: Structured clinical metadata and population trend analysis
 
----
-
-## 📈 Technical Debt & Future Improvements
-
-### Code Quality
-- Add comprehensive TypeScript typing
-- Implement proper error boundaries
-- Add unit tests for components
-- Performance optimization for large datasets
-
-### Architecture
-- API rate limiting and caching
-- Real-time updates with WebSockets
-- Microservices architecture for scaling
-- Security hardening for production
+**Total PRD-V2 Compliance Target: 12-17 hours**
 
 ---
 
-*Last Updated: August 3, 2025*  
-*Status: Ready for backend development phase*
+*Last Updated: August 4, 2025*  
+*Status: Transitioning from MVP to PRD-V2 Implementation*
+
+## 🎯 Current Focus: PRD-V2 Compliance
+
+The system has a solid MVP foundation but needs key PRD-V2 features to meet the full product requirements. Priority is on implementing the missing modules that directly serve the three main personas:
+
+### 👩‍⚕️ **Dr. Aisha (Clinician)** - Primary User
+**Missing**: SOAP Note Generator (critical workflow tool)
+**Needs**: Auto-generated, editable clinical notes from patient data
+
+### 📊 **Siti (Analyst)** - Secondary User  
+**Missing**: Analytics dashboard and structured data extraction
+**Needs**: Population insights and trend analysis from clinical data
+
+### 🧓 **Uncle Tan (Patient)** - Indirect Beneficiary
+**Current**: Well-served through comprehensive clinician data views
+**Benefit**: Better-informed clinicians = better care
+
+## 🚀 Next Steps
+Starting Phase 1 implementation with SOAP Note Generator as the highest priority missing feature for clinical workflow efficiency.
