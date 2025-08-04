@@ -154,6 +154,24 @@ def populate_uncle_tan():
                 "lastQuestion": "What is the current kidney function status?",
                 "lastAnswer": qa_pairs[0]["answer"]
             }
+        },
+        {
+            "id": "soap-generator",
+            "type": "SOAPGenerator",
+            "position": {"x": 750, "y": 300},
+            "data": {
+                "patientId": patient_id,
+                "patientName": "Uncle Tan"
+            }
+        },
+        {
+            "id": "patient-timeline",
+            "type": "Timeline",
+            "position": {"x": 50, "y": 550},
+            "data": {
+                "patientId": patient_id,
+                "patientName": "Uncle Tan"
+            }
         }
     ]
     
@@ -186,7 +204,7 @@ def populate_mrs_chen():
         VALUES (?, ?, ?, ?, ?, ?)
     """, (summary_id, patient_id, "clinical", summary_text, 0.89, datetime.now()))
     
-    # Create basic canvas layout for Mrs. Chen
+    # Create comprehensive canvas layout for Mrs. Chen
     canvas_nodes = [
         {
             "id": "patient-summary",
@@ -197,6 +215,24 @@ def populate_mrs_chen():
                 "age": 54,
                 "urgencyLevel": "medium",
                 "summary": summary_text
+            }
+        },
+        {
+            "id": "soap-generator",
+            "type": "SOAPGenerator",
+            "position": {"x": 450, "y": 50},
+            "data": {
+                "patientId": patient_id,
+                "patientName": "Mrs. Chen"
+            }
+        },
+        {
+            "id": "patient-timeline",
+            "type": "Timeline",
+            "position": {"x": 50, "y": 350},
+            "data": {
+                "patientId": patient_id,
+                "patientName": "Mrs. Chen"
             }
         }
     ]
@@ -230,7 +266,7 @@ def populate_mr_kumar():
         VALUES (?, ?, ?, ?, ?, ?)
     """, (summary_id, patient_id, "clinical", summary_text, 0.91, datetime.now()))
     
-    # Create basic canvas layout for Mr. Kumar
+    # Create comprehensive canvas layout for Mr. Kumar
     canvas_nodes = [
         {
             "id": "patient-summary",
@@ -241,6 +277,24 @@ def populate_mr_kumar():
                 "age": 61,
                 "urgencyLevel": "medium",
                 "summary": summary_text
+            }
+        },
+        {
+            "id": "soap-generator",
+            "type": "SOAPGenerator",
+            "position": {"x": 450, "y": 50},
+            "data": {
+                "patientId": patient_id,
+                "patientName": "Mr. Kumar"
+            }
+        },
+        {
+            "id": "patient-timeline",
+            "type": "Timeline",
+            "position": {"x": 50, "y": 350},
+            "data": {
+                "patientId": patient_id,
+                "patientName": "Mr. Kumar"
             }
         }
     ]

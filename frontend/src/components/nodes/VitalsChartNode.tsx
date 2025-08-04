@@ -25,7 +25,53 @@ ChartJS.register(
 )
 
 const VitalsChartNode: React.FC<CanvasNodeProps> = ({ data }) => {
-  const { vitals, title } = data as VitalsChartNodeData
+  // Handle both data structures: backend format and expected format
+  let vitals: VitalSign[]
+  let title: string
+
+  if (data.vitals) {
+    // Expected format from VitalsChartNodeData
+    vitals = data.vitals
+    title = data.title || 'Vitals Chart'
+  } else if (data.vitalsData) {
+    // Backend format - convert vitalsData array to VitalSign format
+    vitals = [{
+      name: data.chartType === 'trend' ? 'Vital Signs' : 'Vitals',
+      values: data.vitalsData.map((vital: any[]) => ({
+        date: vital[4],
+        value: vital[1],
+        unit: vital[2],
+        reference_range: vital[3]
+      }))
+    }]
+    title = 'Vitals Chart'
+  } else {
+    // Fallback - no valid data
+    console.warn('VitalsChartNode: No valid vitals data provided', data)
+    return (
+      <div className="canvas-node min-w-[400px] min-h-[300px]">
+        <Handle type="target" position={Position.Top} />
+        <div className="flex items-center justify-center h-full">
+          <p className="text-gray-500">No vitals data available</p>
+        </div>
+        <Handle type="source" position={Position.Bottom} />
+      </div>
+    )
+  }
+
+  // Safety check - ensure we have valid data
+  if (!vitals || vitals.length === 0 || !vitals[0] || !vitals[0].values || vitals[0].values.length === 0) {
+    console.warn('VitalsChartNode: Invalid vitals data structure', vitals)
+    return (
+      <div className="canvas-node min-w-[400px] min-h-[300px]">
+        <Handle type="target" position={Position.Top} />
+        <div className="flex items-center justify-center h-full">
+          <p className="text-gray-500">Invalid vitals data</p>
+        </div>
+        <Handle type="source" position={Position.Bottom} />
+      </div>
+    )
+  }
 
   // Prepare chart data
   const vital = vitals[0] // For demo, show first vital

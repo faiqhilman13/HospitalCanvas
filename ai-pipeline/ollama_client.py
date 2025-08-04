@@ -11,7 +11,7 @@ import time
 class OllamaClient:
     def __init__(self, base_url: str = "http://localhost:11434"):
         self.base_url = base_url
-        self.model = "llama3"
+        self.model = "llama3:8b"
         
     def is_available(self) -> bool:
         """Check if Ollama server is available"""

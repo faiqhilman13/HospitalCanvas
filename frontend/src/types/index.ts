@@ -84,12 +84,13 @@ export interface CanvasViewport {
 }
 
 export type CanvasNodeType = 
-  | 'PatientSummary'
-  | 'VitalsChart'
-  | 'DocumentViewer'
-  | 'AIQuestionBox'
-  | 'LabResults'
+  | 'patientSummary'
+  | 'vitalsChart'
+  | 'documentViewer'
+  | 'aiQuestionBox'
+  | 'labResults'
   | 'Timeline'
+  | 'SOAPGenerator'
 
 export interface CanvasNode {
   id: string
@@ -174,6 +175,32 @@ export interface CanvasNodeProps {
 export interface PatientSummaryNodeData {
   summary: PatientSummary
   patient: Patient
+  visitHistory?: VisitSummary[]
+  criticalAlerts?: CriticalAlert[]
+  trendAnalysis?: TrendAnalysis
+}
+
+export interface VisitSummary {
+  date: string
+  type: 'routine' | 'urgent' | 'follow-up' | 'emergency'
+  summary: string
+  key_changes: string[]
+}
+
+export interface CriticalAlert {
+  id: string
+  type: 'lab' | 'vital' | 'medication' | 'clinical'
+  message: string
+  severity: 'warning' | 'critical'
+  date: string
+  resolved: boolean
+}
+
+export interface TrendAnalysis {
+  improving: string[]
+  declining: string[]
+  stable: string[]
+  confidence: number
 }
 
 export interface VitalsChartNodeData {
@@ -190,4 +217,48 @@ export interface DocumentViewerNodeData {
 export interface AIQuestionBoxNodeData {
   qa_pairs: QAPair[]
   onAsk: (question: string) => Promise<QAPair>
+}
+
+export interface SOAPSection {
+  subjective: string
+  objective: string
+  assessment: string
+  plan: string
+}
+
+export interface SOAPNote {
+  id: string
+  patient_id: string
+  date: string
+  soap_sections: SOAPSection
+  generated_by: 'ai' | 'manual'
+  confidence_score: number
+  last_modified: string
+}
+
+export interface SOAPGeneratorNodeData {
+  patient: Patient
+  clinical_data: ClinicalData
+  onGenerate: (patientId: string) => Promise<SOAPNote>
+  onSave: (soapNote: SOAPNote) => Promise<void>
+  existingNotes?: SOAPNote[]
+}
+
+export interface TimelineEvent {
+  id: string
+  date: string
+  type: 'visit' | 'lab' | 'vital' | 'document' | 'procedure' | 'medication'
+  title: string
+  description: string
+  details?: any
+  urgency?: 'low' | 'medium' | 'high' | 'critical'
+}
+
+export interface PatientTimelineNodeData {
+  events: TimelineEvent[]
+  patient: Patient
+  dateRange?: {
+    start: string
+    end: string
+  }
 }

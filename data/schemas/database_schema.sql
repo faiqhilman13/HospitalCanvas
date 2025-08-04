@@ -94,6 +94,22 @@ CREATE TABLE IF NOT EXISTS document_embeddings (
     FOREIGN KEY (document_id) REFERENCES documents(id)
 );
 
+-- SOAP notes - structured clinical notes
+CREATE TABLE IF NOT EXISTS soap_notes (
+    id TEXT PRIMARY KEY,
+    patient_id TEXT NOT NULL,
+    date TIMESTAMP NOT NULL,
+    subjective TEXT NOT NULL,
+    objective TEXT NOT NULL,
+    assessment TEXT NOT NULL,
+    plan TEXT NOT NULL,
+    generated_by TEXT NOT NULL, -- 'ai' or 'manual'
+    confidence_score REAL DEFAULT 0.0,
+    last_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES patients(id)
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_patients_name ON patients(name);
 CREATE INDEX IF NOT EXISTS idx_documents_patient ON documents(patient_id);
@@ -103,3 +119,5 @@ CREATE INDEX IF NOT EXISTS idx_clinical_patient ON clinical_data(patient_id);
 CREATE INDEX IF NOT EXISTS idx_clinical_type ON clinical_data(data_type);
 CREATE INDEX IF NOT EXISTS idx_qa_patient ON qa_pairs(patient_id);
 CREATE INDEX IF NOT EXISTS idx_embeddings_document ON document_embeddings(document_id);
+CREATE INDEX IF NOT EXISTS idx_soap_patient ON soap_notes(patient_id);
+CREATE INDEX IF NOT EXISTS idx_soap_date ON soap_notes(date);

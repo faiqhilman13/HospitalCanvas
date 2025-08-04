@@ -18,7 +18,108 @@ interface LabResultsNodeData {
 }
 
 const LabResultsNode: React.FC<CanvasNodeProps> = ({ data }) => {
-  const { labs } = data as LabResultsNodeData
+  // Handle both data structures: backend format and expected format
+  let labs: Array<{
+    category: string
+    tests: Array<{
+      name: string
+      value: string
+      unit: string
+      reference_range: string
+      flag: 'normal' | 'high' | 'low' | 'critical'
+      date: string
+    }>
+  }>
+
+  if (data.labs) {
+    // Expected format
+    labs = data.labs
+  } else if (data.labData) {
+    // Backend format - convert labData array to labs format
+    const categorizedTests: Record<string, any[]> = {}
+    
+    data.labData.forEach((lab: any[]) => {
+      const [name, value, unit, reference_range, date] = lab
+      
+      // Categorize tests based on name
+      let category = 'General'
+      const lowerName = name.toLowerCase()
+      
+      if (lowerName.includes('creatinine') || lowerName.includes('bun') || lowerName.includes('egfr')) {
+        category = 'Renal Function'
+      } else if (lowerName.includes('hemoglobin') || lowerName.includes('hematocrit')) {
+        category = 'Hematology'
+      } else if (lowerName.includes('potassium') || lowerName.includes('sodium') || lowerName.includes('chloride')) {
+        category = 'Electrolytes'
+      } else if (lowerName.includes('albumin') || lowerName.includes('protein')) {
+        category = 'Protein Studies'
+      } else if (lowerName.includes('phosphorus') || lowerName.includes('calcium') || lowerName.includes('parathyroid')) {
+        category = 'Bone/Mineral'
+      }
+      
+      if (!categorizedTests[category]) {
+        categorizedTests[category] = []
+      }
+      
+      // Determine flag based on value and reference range (simplified logic)
+      let flag: 'normal' | 'high' | 'low' | 'critical' = 'normal'
+      const numValue = parseFloat(value)
+      if (!isNaN(numValue) && reference_range && reference_range !== 'N/A') {
+        // This is a simplified flag determination - in reality this would be more complex
+        if (reference_range.includes('-')) {
+          const [min, max] = reference_range.split('-').map(s => parseFloat(s.trim()))
+          if (!isNaN(min) && !isNaN(max)) {
+            if (numValue < min) flag = 'low'
+            else if (numValue > max) flag = 'high'
+          }
+        } else if (reference_range.startsWith('>')) {
+          const min = parseFloat(reference_range.substring(1))
+          if (!isNaN(min) && numValue < min) flag = 'low'
+        }
+      }
+      
+      categorizedTests[category].push({
+        name,
+        value,
+        unit,
+        reference_range,
+        flag,
+        date
+      })
+    })
+    
+    labs = Object.entries(categorizedTests).map(([category, tests]) => ({
+      category,
+      tests
+    }))
+  } else {
+    // Fallback - no valid data
+    console.warn('LabResultsNode: No valid lab data provided', data)
+    return (
+      <div className="canvas-node min-w-[350px] min-h-[250px]">
+        <Handle type="target" position={Position.Top} />
+        <div className="flex items-center justify-center h-full">
+          <p className="text-gray-500">No lab data available</p>
+        </div>
+        <Handle type="source" position={Position.Bottom} />
+      </div>
+    )
+  }
+
+  // Safety check
+  if (!labs || labs.length === 0) {
+    console.warn('LabResultsNode: Empty labs data', labs)
+    return (
+      <div className="canvas-node min-w-[350px] min-h-[250px]">
+        <Handle type="target" position={Position.Top} />
+        <div className="flex items-center justify-center h-full">
+          <p className="text-gray-500">No lab results available</p>
+        </div>
+        <Handle type="source" position={Position.Bottom} />
+      </div>
+    )
+  }
+
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['Renal Function']))
 
   const toggleCategory = (category: string) => {

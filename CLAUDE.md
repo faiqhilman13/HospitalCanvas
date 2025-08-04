@@ -4,124 +4,138 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AI-Powered Clinical Canvas is a full-stack web application that transforms complex clinical documents into interactive, visual dashboards. It demonstrates a React Flow-based canvas with AI-powered Q&A capabilities for healthcare professionals.
+AI-Powered Clinical Canvas - An interactive, canvas-based clinical intelligence platform that transforms complex patient documents into visual dashboards for healthcare professionals. The system combines OCR, semantic search, LLMs, and visual workflows to reduce clinical admin burden and support faster decision-making.
 
-**Architecture**: 3-tier system with React frontend → FastAPI backend → AI pipeline (RAG system)
+## Architecture
+
+This is a multi-service application with three main components:
+
+### Frontend (React + TypeScript)
+- **Technology**: React 19.1 + TypeScript + Vite + Tailwind CSS 4
+- **Canvas Library**: @xyflow/react for drag-and-drop clinical modules  
+- **State Management**: Zustand store pattern
+- **Data Fetching**: TanStack React Query
+- **Charts**: Chart.js with react-chartjs-2
+- **Location**: `frontend/`
+
+### Backend (FastAPI + SQLite)
+- **Technology**: FastAPI + Pydantic + SQLite
+- **Purpose**: Serves patient data, handles file uploads, AI Q&A endpoints
+- **Database**: SQLite with clinical data schema
+- **Location**: `backend/`
+
+### AI Pipeline (Python)
+- **Technology**: Sentence transformers + FAISS + PDF processing
+- **Purpose**: Document processing, embeddings, RAG pipeline
+- **Models**: BAAI/bge-large-en-v1.5 for embeddings, local LLM via Ollama
+- **Location**: `ai-pipeline/`
 
 ## Development Commands
 
-### Frontend (React + TypeScript)
+### Frontend Development
 ```bash
 cd frontend
-bun install          # Install dependencies
-bun run dev          # Start development server (localhost:5173)
-bun run build        # Build for production
-bun run lint         # Run ESLint
-bun run preview      # Preview production build
+npm install          # Install dependencies
+npm run dev         # Start development server (Vite)
+npm run build       # Build for production (TypeScript + Vite)
+npm run lint        # Run ESLint
+npm run preview     # Preview production build
 ```
 
-### Backend (FastAPI + SQLite)
+### Backend Development
 ```bash
 cd backend
-pip install -r requirements.txt
-python -c "import uvicorn; uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=False)"  # Start server
-python initialize_db.py          # Initialize database schema
-python populate_demo_data.py     # Populate with demo patients
+pip install -r requirements.txt    # Install Python dependencies
+uvicorn main:app --reload          # Start FastAPI server with hot reload
+python initialize_db.py            # Initialize SQLite database
+python populate_demo_data.py       # Load demo patient data
 ```
 
-### AI Pipeline (RAG System)
+### AI Pipeline
 ```bash
 cd ai-pipeline
-pip install -r requirements.txt
-python rag_pipeline.py          # Test RAG system
-python ollama_client.py         # Test Ollama integration
-python document_processor.py    # Test document processing
+pip install -r requirements.txt    # Install AI/ML dependencies
+python document_processor.py       # Process clinical documents
+python rag_pipeline.py            # Initialize RAG system
 ```
 
-### Full System Startup
-1. Backend: `cd backend && python -c "import uvicorn; uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=False)"`
-2. Frontend: `cd frontend && bun run dev`
-3. Access: http://localhost:5173
+## Key Architectural Patterns
 
-## High-Level Architecture
+### Canvas System
+The core UI is built around a modular canvas system using @xyflow/react:
+- **Node Types**: PatientSummary, VitalsChart, DocumentViewer, AIQuestionBox, LabResults, Timeline, SOAPGenerator
+- **Layout Persistence**: Canvas layouts stored per patient in SQLite
+- **Real-time Updates**: React Query for data synchronization
+
+### Type System
+Comprehensive TypeScript definitions in `frontend/src/types/index.ts`:
+- **Clinical Data**: Patient, VitalSign, LabTest, ClinicalData interfaces
+- **Canvas Types**: CanvasNode, CanvasLayout, CanvasViewport for UI state
+- **API Types**: Standardized request/response patterns
 
 ### Data Flow
+1. **Patient Selection** → Load canvas layout from SQLite
+2. **Canvas Modules** → Fetch data via FastAPI endpoints  
+3. **AI Q&A** → RAG pipeline queries document embeddings
+4. **SOAP Generation** → LLM processes clinical data into structured notes
+
+### Store Architecture
+Zustand-based state management in `frontend/src/stores/canvasStore.ts`:
+- Patient data and canvas state
+- Viewport and node management
+- Real-time canvas updates
+
+## Database Schema
+
+SQLite database with clinical-focused schema:
+- **patients**: Core patient information
+- **documents**: Clinical document metadata
+- **canvas_layouts**: Serialized canvas configurations
+- **vitals_data**: Time-series vital signs
+- **lab_results**: Laboratory test results
+- **qa_pairs**: AI-generated Q&A responses
+
+## AI Integration Points
+
+### Document Processing Pipeline
+1. PDF parsing with pdfplumber
+2. Text chunking and embedding generation
+3. FAISS vector storage for semantic search
+4. Reranking with cross-encoder models
+
+### LLM Integration
+- **Local LLM**: Ollama for privacy-focused deployment
+- **Prompt Templates**: Patient summarization, SOAP note generation, Q&A
+- **Citation System**: Source document references with page numbers
+
+## Component Development Patterns
+
+### Canvas Nodes
+Each clinical module follows the pattern:
+```typescript
+interface [NodeType]NodeData {
+  // Node-specific data structure
+}
+
+const [NodeType]Node: React.FC<CanvasNodeProps> = ({ id, data }) => {
+  // Node implementation with drag/resize capabilities
+}
 ```
-PDF Documents → AI Pipeline → SQLite → FastAPI → React Canvas
-```
 
-### Core Components
+### Hooks Pattern
+Custom hooks for data fetching:
+- `usePatientData.ts`: Patient information and clinical data
+- `usePatients.ts`: Patient list and selection
+- `useSOAPNotes.ts`: SOAP note generation and management
 
-**Frontend**: 
-- **Canvas System**: React Flow-based interactive canvas with 5 custom node types
-- **State Management**: Zustand store for canvas state, React Query for API data
-- **Custom Nodes**: PatientSummaryNode, VitalsChartNode, DocumentViewerNode, AIQuestionBoxNode, LabResultsNode
-- **Type Safety**: Comprehensive TypeScript interfaces in `frontend/src/types/index.ts`
+## Privacy & Security Notes
+- All demo data is 100% synthetic
+- No real PHI (Protected Health Information) used
+- File uploads handled securely through FastAPI
+- Canvas layouts encrypted in database storage
 
-**Backend**:
-- **API Layer**: FastAPI with 3 core endpoints: `/api/patients`, `/api/patients/{id}`, `/api/patients/{id}/ask`
-- **Database**: SQLite with 8 tables (patients, documents, canvas_layouts, ai_summaries, clinical_data, qa_pairs, document_embeddings)
-- **AI Integration**: RAG pipeline integration with fallback to pre-computed Q&A pairs
-- **CORS**: Configured for frontend-backend communication
-
-**AI Pipeline**:
-- **RAG System**: Document processing → embedding generation → retrieval → LLM generation
-- **Ollama Integration**: Local LLaMA 3 model support with fallback mechanisms
-- **Document Processing**: PDF text extraction, chunking, and relevance scoring
-- **Clinical Context**: Patient data integration for contextual Q&A responses
-
-### Key Files to Understand
-
-**Frontend Architecture**:
-- `frontend/src/types/index.ts` - Complete type definitions for the entire system
-- `frontend/src/components/ClinicalCanvas.tsx` - Main canvas component orchestrating React Flow
-- `frontend/src/hooks/usePatientData.ts` - API integration with data transformation layer
-- `frontend/src/stores/canvasStore.ts` - Canvas state management
-
-**Backend Architecture**:
-- `backend/main.py` - FastAPI app with all endpoints and RAG integration
-- `data/schemas/database_schema.sql` - Complete database schema with relationships
-- `backend/populate_demo_data.py` - Demo data generation with realistic clinical cases
-
-**AI Pipeline Architecture**:
-- `ai-pipeline/rag_pipeline.py` - Core RAG system orchestrating retrieval and generation
-- `ai-pipeline/ollama_client.py` - LLM client with clinical question handling
-- `ai-pipeline/document_processor.py` - PDF processing and text chunking
-
-### Demo Patients
-- **Uncle Tan** (uncle-tan-001): Stage 4 CKD with comprehensive data and Q&A pairs
-- **Mrs. Chen** (mrs-chen-002): Type 2 diabetes case
-- **Mr. Kumar** (mr-kumar-003): Post-MI cardiovascular case
-
-### Canvas Node System
-React Flow nodes are custom components with standardized interfaces:
-- Each node type has dedicated TypeScript interfaces in `types/index.ts`
-- Nodes receive data through the `data` prop and handle their own rendering
-- Canvas layouts are stored as JSON in the database and loaded dynamically
-- Node interactions (drag, resize) are handled by React Flow with custom handles
-
-### AI Q&A System
-The Q&A system uses a layered approach:
-1. **Pre-computed answers**: Database lookup for common questions (demo reliability)
-2. **RAG pipeline**: Document retrieval + LLM generation for new questions
-3. **Fallback responses**: Basic responses when AI systems are unavailable
-
-### Database Design
-SQLite database with clinical data normalization:
-- **patients** → **documents** → **document_embeddings** (for RAG)
-- **patients** → **clinical_data** (vitals/labs with temporal data)
-- **patients** → **canvas_layouts** (JSON storage of React Flow layouts)
-- **patients** → **qa_pairs** (pre-computed Q&A for demo reliability)
-
-### Error Handling Strategy
-- Frontend: Graceful API failures with fallback to mock data
-- Backend: Try RAG → fallback to database Q&A → basic response
-- AI Pipeline: Ollama unavailable → use pre-computed responses
-
-### Performance Considerations
-- Canvas layouts are pre-computed and stored as JSON for instant loading
-- Demo data is populated at startup for reliable performance
-- Frontend uses React Query for caching and optimistic updates
-- AI responses have confidence scoring for user trust
-
-This architecture prioritizes demo reliability while showcasing production-ready patterns for clinical AI applications.
+## Demo Patient Data
+Pre-loaded synthetic patients for development:
+- **Uncle Tan**: 65-year-old with kidney function decline
+- **Mrs. Chen**: Diabetes management case  
+- **Mr. Kumar**: Cardiovascular risk assessment

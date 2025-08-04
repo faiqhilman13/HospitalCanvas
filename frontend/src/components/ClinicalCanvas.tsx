@@ -27,26 +27,96 @@ import VitalsChartNode from './nodes/VitalsChartNode'
 import DocumentViewerNode from './nodes/DocumentViewerNode'
 import AIQuestionBoxNode from './nodes/AIQuestionBoxNode'
 import LabResultsNode from './nodes/LabResultsNode'
+import SOAPGeneratorNode from './nodes/SOAPGeneratorNode'
+import PatientTimelineNode from './nodes/PatientTimelineNode'
 
 // Define custom node types
 const nodeTypes: NodeTypes = {
-  PatientSummary: PatientSummaryNode,
-  VitalsChart: VitalsChartNode,
-  DocumentViewer: DocumentViewerNode,
-  AIQuestionBox: AIQuestionBoxNode,
-  LabResults: LabResultsNode,
+  patientSummary: PatientSummaryNode,
+  vitalsChart: VitalsChartNode,
+  documentViewer: DocumentViewerNode,
+  aiQuestionBox: AIQuestionBoxNode,
+  labResults: LabResultsNode,
+  SOAPGenerator: SOAPGeneratorNode,
+  Timeline: PatientTimelineNode,
 }
 
-// Convert our custom canvas nodes to react-flow nodes
-const convertToReactFlowNodes = (canvasNodes: CustomCanvasNode[]): Node[] => {
+// Helper function to create properly hydrated node data
+const createNodeData = (nodeType: string, storedData: any, patientData: PatientData | null): any => {
+  if (!patientData) return storedData; // Return minimal data if still loading
+  
+  switch (nodeType) {
+    case 'SOAPGenerator':
+      return {
+        patient: patientData.patient,
+        clinical_data: patientData.clinical_data
+      };
+    case 'Timeline':
+      // Generate timeline events from patient data
+      const events = [
+        ...patientData.clinical_data.vitals.flatMap(vital => 
+          vital.values.map(value => ({
+            id: `vital-${vital.name}-${value.date}`,
+            date: value.date,
+            type: 'vital' as const,
+            title: `${vital.name}: ${value.value} ${value.unit}`,
+            description: `Recorded ${vital.name}`,
+            urgency: value.flag === 'critical' ? 'critical' as const : 'low' as const
+          }))
+        ),
+        ...patientData.clinical_data.labs.flatMap(category =>
+          category.tests.map(test => ({
+            id: `lab-${test.name}-${test.date}`,
+            date: test.date,
+            type: 'lab' as const,
+            title: `${test.name}: ${test.value} ${test.unit}`,
+            description: `Lab result in ${category.category}`,
+            urgency: test.flag === 'critical' ? 'critical' as const : 'low' as const
+          }))
+        )
+      ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+      return {
+        events,
+        patient: patientData.patient
+      };
+    case 'patientSummary':
+      return {
+        summary: patientData.summary,
+        patient: patientData.patient
+      };
+    case 'vitalsChart':
+      return {
+        vitals: patientData.clinical_data.vitals,
+        title: 'Patient Vitals'
+      };
+    case 'documentViewer':
+      return {
+        document: patientData.documents[0] || null
+      };
+    case 'aiQuestionBox':
+      return {
+        qa_pairs: patientData.qa_pairs || []
+      };
+    case 'labResults':
+      return {
+        labs: patientData.clinical_data.labs
+      };
+    default:
+      return storedData;
+  }
+}
+
+// Convert our custom canvas nodes to react-flow nodes with proper data hydration
+const convertToReactFlowNodes = (canvasNodes: CustomCanvasNode[], patientData: PatientData | null): Node[] => {
   return canvasNodes.map(node => ({
     id: node.id,
     type: node.type,
     position: node.position,
-    data: node.data,
+    data: createNodeData(node.type, node.data, patientData),
     style: {
-      width: node.size.width,
-      height: node.size.height,
+      width: node.size?.width || 300,
+      height: node.size?.height || 200,
     },
   }))
 }
@@ -65,7 +135,7 @@ const ClinicalCanvas: React.FC<ClinicalCanvasProps> = ({ patientId }) => {
   const { data: patientApiData, isLoading, error } = usePatientData(patientId)
 
   // Convert canvas nodes to react-flow format
-  const reactFlowNodes = convertToReactFlowNodes(canvasNodes)
+  const reactFlowNodes = convertToReactFlowNodes(canvasNodes, patientData)
   const reactFlowEdges: Edge[] = connections.map(conn => ({
     id: conn.id,
     source: conn.source,
@@ -78,9 +148,9 @@ const ClinicalCanvas: React.FC<ClinicalCanvasProps> = ({ patientId }) => {
 
   // Update react-flow nodes when canvas nodes change
   useEffect(() => {
-    const newNodes = convertToReactFlowNodes(canvasNodes)
+    const newNodes = convertToReactFlowNodes(canvasNodes, patientData)
     setNodes(newNodes)
-  }, [canvasNodes, setNodes])
+  }, [canvasNodes, patientData, setNodes])
 
   // Load patient data when it becomes available
   useEffect(() => {

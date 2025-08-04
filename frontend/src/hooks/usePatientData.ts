@@ -29,7 +29,7 @@ const mockPatientData: Record<string, PatientData> = {
       nodes: [
         {
           id: 'summary-1',
-          type: 'PatientSummary',
+          type: 'patientSummary',
           position: { x: 50, y: 50 },
           size: { width: 350, height: 200 },
           data: {
@@ -49,12 +49,56 @@ const mockPatientData: Record<string, PatientData> = {
               name: 'Uncle Tan',
               age: 65,
               gender: 'male'
+            },
+            visitHistory: [
+              {
+                date: '2024-07-15',
+                type: 'urgent',
+                summary: 'Nephrology consultation for declining kidney function',
+                key_changes: ['eGFR dropped to 48', 'Creatinine elevated to 1.4']
+              },
+              {
+                date: '2024-04-15',
+                type: 'follow-up',
+                summary: 'Quarterly diabetes and kidney function check',
+                key_changes: ['eGFR declined from 62 to 55', 'HbA1c stable']
+              },
+              {
+                date: '2024-01-15',
+                type: 'routine',
+                summary: 'Annual physical examination',
+                key_changes: ['New ACE inhibitor started', 'Diet counseling provided']
+              }
+            ],
+            criticalAlerts: [
+              {
+                id: 'alert-001',
+                type: 'lab',
+                message: 'eGFR critically low at 48 mL/min/1.73m² - urgent nephrology referral needed',
+                severity: 'critical',
+                date: '2024-07-15',
+                resolved: false
+              },
+              {
+                id: 'alert-002',
+                type: 'vital',
+                message: 'Blood pressure consistently elevated >140/90 mmHg',
+                severity: 'warning',
+                date: '2024-07-15',
+                resolved: false
+              }
+            ],
+            trendAnalysis: {
+              improving: ['Blood sugar control'],
+              declining: ['Kidney function', 'Blood pressure control'],
+              stable: ['Medication adherence'],
+              confidence: 0.88
             }
           }
         },
         {
           id: 'vitals-1',
-          type: 'VitalsChart',
+          type: 'vitalsChart',
           position: { x: 450, y: 50 },
           size: { width: 400, height: 300 },
           data: {
@@ -73,7 +117,7 @@ const mockPatientData: Record<string, PatientData> = {
         },
         {
           id: 'document-1',
-          type: 'DocumentViewer',
+          type: 'documentViewer',
           position: { x: 50, y: 300 },
           size: { width: 350, height: 400 },
           data: {
@@ -88,7 +132,7 @@ const mockPatientData: Record<string, PatientData> = {
         },
         {
           id: 'qa-1',
-          type: 'AIQuestionBox',
+          type: 'aiQuestionBox',
           position: { x: 450, y: 400 },
           size: { width: 400, height: 300 },
           data: {
@@ -105,6 +149,110 @@ const mockPatientData: Record<string, PatientData> = {
                 }
               }
             ]
+          }
+        },
+        {
+          id: 'soap-generator-1',
+          type: 'SOAPGenerator',
+          position: { x: 50, y: 750 },
+          size: { width: 500, height: 400 },
+          data: {
+            patient: {
+              id: 'uncle-tan-001',
+              name: 'Uncle Tan',
+              age: 65,
+              gender: 'male'
+            },
+            clinical_data: {
+              vitals: [
+                {
+                  name: 'Blood Pressure',
+                  values: [
+                    { date: '2024-07-15', value: '145/88', unit: 'mmHg', reference_range: '<140/90', flag: 'high' }
+                  ]
+                }
+              ],
+              labs: [
+                {
+                  category: 'Renal Function',
+                  tests: [
+                    {
+                      name: 'eGFR',
+                      value: '48',
+                      unit: 'mL/min/1.73m²',
+                      reference_range: '>60',
+                      flag: 'low',
+                      date: '2024-07-15'
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          id: 'timeline-1',
+          type: 'Timeline',
+          position: { x: 600, y: 750 },
+          size: { width: 450, height: 400 },
+          data: {
+            patient: {
+              id: 'uncle-tan-001',
+              name: 'Uncle Tan',
+              age: 65,
+              gender: 'male'
+            },
+            events: [
+              {
+                id: 'event-001',
+                date: '2024-07-15T09:00:00Z',
+                type: 'visit',
+                title: 'Nephrology Consultation',
+                description: 'Follow-up visit for chronic kidney disease management',
+                urgency: 'high',
+                details: 'Patient evaluated for CKD progression. eGFR declined to 48. Discussed treatment options and monitoring plan.'
+              },
+              {
+                id: 'event-002',
+                date: '2024-07-15T10:30:00Z',
+                type: 'lab',
+                title: 'Comprehensive Metabolic Panel',
+                description: 'Blood work showing kidney function decline',
+                urgency: 'high',
+                details: 'Creatinine: 1.4 mg/dL (↑), eGFR: 48 mL/min/1.73m² (↓), BUN: 25 mg/dL'
+              },
+              {
+                id: 'event-003',
+                date: '2024-07-15T11:00:00Z',
+                type: 'vital',
+                title: 'Vital Signs Assessment',
+                description: 'Blood pressure monitoring and weight check',
+                urgency: 'medium',
+                details: 'BP: 145/88 mmHg, Weight: 72 kg, HR: 78 bpm, Temp: 98.6°F'
+              },
+              {
+                id: 'event-004',
+                date: '2024-04-15T14:00:00Z',
+                type: 'lab',
+                title: 'Routine Lab Panel',
+                description: 'Quarterly kidney function monitoring',
+                urgency: 'medium',
+                details: 'Creatinine: 1.2 mg/dL, eGFR: 55 mL/min/1.73m², showing gradual decline'
+              },
+              {
+                id: 'event-005',
+                date: '2024-01-15T09:30:00Z',
+                type: 'visit',
+                title: 'Primary Care Visit',
+                description: 'Annual physical examination',
+                urgency: 'low',
+                details: 'General health assessment. Kidney function stable at that time.'
+              }
+            ],
+            dateRange: {
+              start: '2024-01-01',
+              end: '2024-08-01'
+            }
           }
         }
       ],

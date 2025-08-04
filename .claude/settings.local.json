@@ -20,7 +20,13 @@
       "Bash(git add:*)",
       "Bash(git remote add:*)",
       "Bash(git branch:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "mcp__playwright__browser_install",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_network_requests",
+      "Bash(python:*)"
     ],
     "deny": []
   }
