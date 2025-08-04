@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+@theme {
+  --color-clinical-blue: #1e40af;
+  --color-clinical-green: #059669;
+  --color-clinical-red: #dc2626;
+  --color-clinical-orange: #ea580c;
+  --color-clinical-gray: #6b7280;
+  
+  --font-family-sans: 'Inter', system-ui, sans-serif;
+}
+
+:root {
+  font-family: var(--font-family-sans);
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Clinical Canvas specific styles */
+.canvas-container {
+  width: 100%;
+  height: 100vh;
+  background-color: #f9fafb;
+}
+
+.canvas-node {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
+}
+
+.clinical-button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: colors 200ms;
+}
+
+.clinical-button-primary {
+  background-color: var(--color-clinical-blue);
+  color: white;
+}
+
+.clinical-button-primary:hover {
+  background-color: #1d4ed8;
+}
+
+.clinical-button-secondary {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.clinical-button-secondary:hover {
+  background-color: #e5e7eb;
+}

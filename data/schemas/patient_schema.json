@@ -1,0 +1,198 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Patient Data Schema",
+  "description": "Schema for patient data with canvas layout and clinical information",
+  "type": "object",
+  "properties": {
+    "patient": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique patient identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Patient display name"
+        },
+        "age": {
+          "type": "integer",
+          "description": "Patient age in years"
+        },
+        "gender": {
+          "type": "string",
+          "enum": ["male", "female", "other"]
+        }
+      },
+      "required": ["id", "name"]
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "clinical_summary": {
+          "type": "string",
+          "description": "AI-generated clinical summary"
+        },
+        "key_issues": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of key clinical issues"
+        },
+        "urgency_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "confidence_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "canvas_layout": {
+      "type": "object",
+      "properties": {
+        "viewport": {
+          "type": "object",
+          "properties": {
+            "x": {"type": "number"},
+            "y": {"type": "number"},
+            "zoom": {"type": "number", "minimum": 0.1, "maximum": 3}
+          }
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {"type": "string"},
+              "type": {
+                "type": "string",
+                "enum": ["PatientSummary", "VitalsChart", "DocumentViewer", "AIQuestionBox", "LabResults", "Timeline"]
+              },
+              "position": {
+                "type": "object",
+                "properties": {
+                  "x": {"type": "number"},
+                  "y": {"type": "number"}
+                },
+                "required": ["x", "y"]
+              },
+              "size": {
+                "type": "object",
+                "properties": {
+                  "width": {"type": "number", "minimum": 100},
+                  "height": {"type": "number", "minimum": 100}
+                },
+                "required": ["width", "height"]
+              },
+              "data": {
+                "type": "object",
+                "description": "Node-specific data payload"
+              }
+            },
+            "required": ["id", "type", "position", "size"]
+          }
+        },
+        "connections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {"type": "string"},
+              "source": {"type": "string"},
+              "target": {"type": "string"},
+              "type": {"type": "string", "default": "default"}
+            },
+            "required": ["id", "source", "target"]
+          }
+        }
+      }
+    },
+    "clinical_data": {
+      "type": "object",
+      "properties": {
+        "vitals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "values": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "date": {"type": "string", "format": "date"},
+                    "value": {"type": "string"},
+                    "unit": {"type": "string"},
+                    "reference_range": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "labs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "category": {"type": "string"},
+              "tests": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {"type": "string"},
+                    "value": {"type": "string"},
+                    "unit": {"type": "string"},
+                    "reference_range": {"type": "string"},
+                    "flag": {"type": "string", "enum": ["normal", "high", "low", "critical"]},
+                    "date": {"type": "string", "format": "date"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "filename": {"type": "string"},
+          "type": {"type": "string"},
+          "url": {"type": "string", "format": "uri"},
+          "pages": {"type": "integer"}
+        }
+      }
+    },
+    "qa_pairs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "question": {"type": "string"},
+          "answer": {"type": "string"},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "source": {
+            "type": "object",
+            "properties": {
+              "document_id": {"type": "string"},
+              "page": {"type": "integer"},
+              "text": {"type": "string"}
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["patient", "canvas_layout"]
+}

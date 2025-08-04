@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Cache
+.cache/
+.npm/
+.yarn/
+
+# Temporary files
+tmp/
+temp/
+
+# AI/ML
+*.pkl
+*.joblib
+*.model
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python specific
+*.egg
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Frontend specific
+.next/
+.nuxt/
+.output/
+.vercel/
