@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { NodeResizer } from '@xyflow/react'
 import type { CanvasNodeProps } from '../../types'
 
 interface SystemAdminNodeData {
@@ -115,7 +116,7 @@ export default function SystemAdminNode({ id, data }: CanvasNodeProps) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 w-96 h-80">
+      <div className="canvas-node bg-white rounded-lg shadow-md border border-gray-200 min-w-[300px] min-h-[200px]">
         <div className="p-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">System Administration</h3>
         </div>
@@ -128,7 +129,24 @@ export default function SystemAdminNode({ id, data }: CanvasNodeProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md border border-gray-200 w-96 h-96 flex flex-col">
+    <div className="canvas-node bg-white rounded-lg shadow-md border border-gray-200 min-w-[300px] min-h-[200px] flex flex-col">
+      <NodeResizer
+        minWidth={300}
+        minHeight={200}
+        maxWidth={600}
+        maxHeight={500}
+        shouldResize={() => true}
+        handleStyle={{
+          backgroundColor: '#6366f1',
+          width: '8px',
+          height: '8px',
+          border: '2px solid white'
+        }}
+        lineStyle={{
+          borderColor: '#6366f1',
+          borderWidth: '2px'
+        }}
+      />
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">

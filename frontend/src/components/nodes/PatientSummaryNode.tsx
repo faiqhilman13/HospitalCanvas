@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Handle, Position } from '@xyflow/react'
+import { Handle, Position, NodeResizer } from '@xyflow/react'
 import { 
   User, 
   AlertTriangle, 
@@ -79,6 +79,23 @@ const PatientSummaryNode: React.FC<CanvasNodeProps> = ({ data }) => {
 
   return (
     <div className="canvas-node min-w-[400px] max-w-[500px]">
+      <NodeResizer 
+        minWidth={300} 
+        minHeight={200} 
+        maxWidth={600}
+        maxHeight={800}
+        shouldResize={() => true}
+        handleStyle={{
+          backgroundColor: '#3b82f6',
+          width: '8px',
+          height: '8px',
+          border: '2px solid white',
+        }}
+        lineStyle={{
+          borderColor: '#3b82f6',
+          borderWidth: '2px',
+        }}
+      />
       <Handle type="target" position={Position.Top} />
       
       {/* Header */}

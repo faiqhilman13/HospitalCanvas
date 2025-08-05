@@ -1,5 +1,5 @@
 import React from 'react'
-import { Handle, Position } from '@xyflow/react'
+import { Handle, Position, NodeResizer } from '@xyflow/react'
 import { Line } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
@@ -165,6 +165,23 @@ const VitalsChartNode: React.FC<CanvasNodeProps> = ({ data }) => {
 
   return (
     <div className="canvas-node min-w-[400px] min-h-[300px]">
+      <NodeResizer 
+        minWidth={350} 
+        minHeight={250} 
+        maxWidth={700}
+        maxHeight={600}
+        shouldResize={() => true}
+        handleStyle={{
+          backgroundColor: '#10b981',
+          width: '8px',
+          height: '8px',
+          border: '2px solid white',
+        }}
+        lineStyle={{
+          borderColor: '#10b981',
+          borderWidth: '2px',
+        }}
+      />
       <Handle type="target" position={Position.Top} />
       
       {/* Header */}

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { Handle, Position } from '@xyflow/react'
+import { Handle, Position, NodeResizer } from '@xyflow/react'
 import { 
   Calendar, 
   Clock, 
@@ -21,6 +21,23 @@ const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
   if (!patient || !events) {
     return (
       <div className="canvas-node min-w-[450px] max-w-[600px]">
+        <NodeResizer
+          minWidth={350}
+          minHeight={250}
+          maxWidth={650}
+          maxHeight={550}
+          shouldResize={() => true}
+          handleStyle={{
+            backgroundColor: '#84cc16',
+            width: '8px',
+            height: '8px',
+            border: '2px solid white'
+          }}
+          lineStyle={{
+            borderColor: '#84cc16',
+            borderWidth: '2px'
+          }}
+        />
         <Handle type="target" position={Position.Top} />
         
         <div className="flex items-center justify-between mb-4">
@@ -148,6 +165,23 @@ const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
 
   return (
     <div className="canvas-node min-w-[450px] max-w-[600px]">
+      <NodeResizer
+        minWidth={350}
+        minHeight={250}
+        maxWidth={650}
+        maxHeight={550}
+        shouldResize={() => true}
+        handleStyle={{
+          backgroundColor: '#84cc16',
+          width: '8px',
+          height: '8px',
+          border: '2px solid white'
+        }}
+        lineStyle={{
+          borderColor: '#84cc16',
+          borderWidth: '2px'
+        }}
+      />
       <Handle type="target" position={Position.Top} />
       
       {/* Header */}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Handle, Position } from '@xyflow/react'
+import { Handle, Position, NodeResizer } from '@xyflow/react'
 import { TestTube, ChevronDown, ChevronRight, AlertTriangle, CheckCircle } from 'lucide-react'
 import type { CanvasNodeProps } from '../../types'
 
@@ -159,6 +159,23 @@ const LabResultsNode: React.FC<CanvasNodeProps> = ({ data }) => {
 
   return (
     <div className="canvas-node min-w-[350px] min-h-[250px]">
+      <NodeResizer
+        minWidth={350}
+        minHeight={250}
+        maxWidth={650}
+        maxHeight={550}
+        shouldResize={() => true}
+        handleStyle={{
+          backgroundColor: '#f97316',
+          width: '8px',
+          height: '8px',
+          border: '2px solid white'
+        }}
+        lineStyle={{
+          borderColor: '#f97316',
+          borderWidth: '2px'
+        }}
+      />
       <Handle type="target" position={Position.Top} />
       
       {/* Header */}

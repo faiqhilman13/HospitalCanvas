@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Handle, Position, NodeResizer } from '@xyflow/react'
 import type { CanvasNodeProps } from '../../types'
 
 interface PopulationMetric {
@@ -89,7 +90,7 @@ export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 w-96 h-80">
+      <div className="canvas-node bg-white rounded-lg shadow-md border border-gray-200 min-w-[300px] min-h-[250px]">
         <div className="p-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
         </div>
@@ -102,7 +103,25 @@ export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md border border-gray-200 w-96 h-96 flex flex-col">
+    <div className="canvas-node bg-white rounded-lg shadow-md border border-gray-200 min-w-[300px] min-h-[250px] flex flex-col">
+      <NodeResizer 
+        minWidth={300} 
+        minHeight={250} 
+        maxWidth={600}
+        maxHeight={500}
+        shouldResize={() => true}
+        handleStyle={{
+          backgroundColor: '#8b5cf6',
+          width: '8px',
+          height: '8px',
+          border: '2px solid white',
+        }}
+        lineStyle={{
+          borderColor: '#8b5cf6',
+          borderWidth: '2px',
+        }}
+      />
+      <Handle type="target" position={Position.Top} />
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
@@ -191,14 +210,14 @@ export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
                   {pattern.affected_patients} patients affected
                 </div>
                 <div className="flex flex-wrap gap-1">
-                  {pattern.key_indicators.slice(0, 2).map((indicator, idx) => (
+                  {pattern.key_indicators?.slice(0, 2).map((indicator, idx) => (
                     <span
                       key={idx}
                       className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-800"
                     >
                       {indicator}
                     </span>
-                  ))}
+                  )) || []}
                 </div>
               </div>
             ))}
@@ -219,9 +238,9 @@ export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                   <div>Usage: {med.usage_count}</div>
-                  <div>Cost: ${med.cost_analysis.average_cost}</div>
+                  <div>Cost: ${med.cost_analysis?.average_cost || 'N/A'}</div>
                   <div>Side Effects: {med.side_effects_reported}</div>
-                  <div>Total Rx: {med.cost_analysis.total_prescribed}</div>
+                  <div>Total Rx: {med.cost_analysis?.total_prescribed || 'N/A'}</div>
                 </div>
               </div>
             ))}
@@ -235,6 +254,7 @@ export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
           Last updated: {new Date().toLocaleString()}
         </div>
       </div>
+      <Handle type="source" position={Position.Bottom} />
     </div>
   )
 }

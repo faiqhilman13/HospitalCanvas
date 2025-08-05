@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Handle, Position } from '@xyflow/react'
+import { Handle, Position, NodeResizer } from '@xyflow/react'
 import { MessageCircle, Send, Brain, ExternalLink } from 'lucide-react'
 import type { CanvasNodeProps, AIQuestionBoxNodeData, QAPair } from '../../types'
 
@@ -53,6 +53,23 @@ const AIQuestionBoxNode: React.FC<CanvasNodeProps> = ({ data }) => {
 
   return (
     <div className="canvas-node min-w-[400px] min-h-[300px] flex flex-col">
+      <NodeResizer
+        minWidth={300}
+        minHeight={200}
+        maxWidth={600}
+        maxHeight={500}
+        shouldResize={() => true}
+        handleStyle={{
+          backgroundColor: '#06b6d4',
+          width: '8px',
+          height: '8px',
+          border: '2px solid white'
+        }}
+        lineStyle={{
+          borderColor: '#06b6d4',
+          borderWidth: '2px'
+        }}
+      />
       <Handle type="target" position={Position.Top} />
       
       {/* Header */}

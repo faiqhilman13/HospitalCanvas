@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react'
-import { Handle, Position } from '@xyflow/react'
+import { Handle, Position, NodeResizer } from '@xyflow/react'
 import { FileText, ZoomIn, ZoomOut, Search, Download, Upload, Plus, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import type { CanvasNodeProps, DocumentViewerNodeData } from '../../types'
 
@@ -119,6 +119,23 @@ const DocumentViewerNode: React.FC<CanvasNodeProps> = ({ data }) => {
 
   return (
     <div className="canvas-node min-w-[350px] min-h-[400px] flex flex-col">
+      <NodeResizer
+        minWidth={400}
+        minHeight={300}
+        maxWidth={700}
+        maxHeight={600}
+        shouldResize={() => true}
+        handleStyle={{
+          backgroundColor: '#ec4899',
+          width: '8px',
+          height: '8px',
+          border: '2px solid white'
+        }}
+        lineStyle={{
+          borderColor: '#ec4899',
+          borderWidth: '2px'
+        }}
+      />
       <Handle type="target" position={Position.Top} />
       
       {/* Header */}

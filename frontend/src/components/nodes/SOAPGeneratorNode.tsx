@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react'
-import { Handle, Position } from '@xyflow/react'
+import { Handle, Position, NodeResizer } from '@xyflow/react'
 import { FileText, Sparkles, Save, Edit3, Calendar, User } from 'lucide-react'
 import type { CanvasNodeProps, SOAPGeneratorNodeData, SOAPNote, SOAPSection } from '../../types'
 import { createSOAPNoteHandlers } from '../../hooks/useSOAPNotes'
@@ -118,6 +118,23 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
 
   return (
     <div className="canvas-node min-w-[400px] max-w-[500px]">
+      <NodeResizer 
+        minWidth={350} 
+        minHeight={300} 
+        maxWidth={650}
+        maxHeight={700}
+        shouldResize={() => true}
+        handleStyle={{
+          backgroundColor: '#f59e0b',
+          width: '8px',
+          height: '8px',
+          border: '2px solid white',
+        }}
+        lineStyle={{
+          borderColor: '#f59e0b',
+          borderWidth: '2px',
+        }}
+      />
       <Handle type="target" position={Position.Top} />
       
       {/* Header */}
