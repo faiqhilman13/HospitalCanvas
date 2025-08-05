@@ -10,36 +10,29 @@ const AIQuestionBoxNode: React.FC<CanvasNodeProps> = ({ data }) => {
   const [conversations, setConversations] = useState<QAPair[]>(qa_pairs || [])
 
   const handleAsk = async () => {
-    if (!question.trim() || isLoading) return
+    if (!question.trim() || isLoading || !onAsk) return
 
     setIsLoading(true)
     try {
-      // Mock AI response for demo
-      const mockResponse: QAPair = {
-        id: `qa-${Date.now()}`,
-        question: question.trim(),
-        answer: "Based on the clinical data, I can see that this patient's condition shows several concerning trends. The analysis indicates a need for close monitoring and potential intervention.",
-        confidence: 0.87,
-        source: {
-          document_id: 'doc-001',
-          page: Math.floor(Math.random() * 15) + 1,
-          text: 'Reference text from the clinical document...'
-        }
-      }
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      if (onAsk) {
-        const response = await onAsk(question.trim())
-        setConversations(prev => [...prev, response])
-      } else {
-        setConversations(prev => [...prev, mockResponse])
-      }
-      
+      const response = await onAsk(question.trim())
+      setConversations(prev => [...prev, response])
       setQuestion('')
     } catch (error) {
       console.error('Error asking question:', error)
+      // Show user-friendly error message
+      const errorResponse: QAPair = {
+        id: `qa-error-${Date.now()}`,
+        question: question.trim(),
+        answer: "I apologize, but I encountered an error while processing your question. Please try again or contact support if the problem persists.",
+        confidence: 0.0,
+        source: {
+          document_id: 'error',
+          page: 0,
+          text: 'Error occurred during processing'
+        }
+      }
+      setConversations(prev => [...prev, errorResponse])
+      setQuestion('')
     } finally {
       setIsLoading(false)
     }
@@ -124,7 +117,7 @@ const AIQuestionBoxNode: React.FC<CanvasNodeProps> = ({ data }) => {
           />
           <button
             onClick={handleAsk}
-            disabled={!question.trim() || isLoading}
+            disabled={!question.trim() || isLoading || !onAsk}
             className="px-3 py-2 bg-clinical-blue text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {isLoading ? (

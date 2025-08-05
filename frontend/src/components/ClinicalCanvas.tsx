@@ -103,7 +103,36 @@ const createNodeData = (nodeType: string, storedData: any, patientData: PatientD
       };
     case 'aiQuestionBox':
       return {
-        qa_pairs: patientData.qa_pairs || []
+        qa_pairs: patientData.qa_pairs || [],
+        onAsk: async (question: string) => {
+          const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+          const response = await fetch(`${API_BASE_URL}/patients/${patientData.patient.id}/ask`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ question })
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to get AI response');
+          }
+          
+          const data = await response.json();
+          
+          // Transform backend QAResponse to frontend QAPair format
+          return {
+            id: `qa-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            question,
+            answer: data.answer,
+            confidence: data.confidence_score,
+            source: {
+              document_id: data.source_document || 'unknown',
+              page: data.source_page || 1,
+              text: 'Reference text from clinical document...'
+            }
+          };
+        }
       };
     case 'labResults':
       return {
