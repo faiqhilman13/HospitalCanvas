@@ -57,7 +57,7 @@ const defaultEdgeOptions: DefaultEdgeOptions = {
     strokeWidth: 2,
   },
   markerEnd: {
-    type: 'arrowclosed',
+    type: 'arrowclosed' as any,
     width: 15,
     height: 15,
     color: '#3b82f6',

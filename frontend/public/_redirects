@@ -1,0 +1,11 @@
+# Redirects for Single Page Application (SPA)
+# This ensures that all routes serve index.html for client-side routing (React Router)
+
+/*    /index.html   200
+
+# API redirect (if backend is deployed elsewhere)
+/api/*  https://your-backend-domain.com/api/:splat  200
+
+# Optional: Redirect specific routes for better SEO
+/canvas  /index.html  200
+/  /index.html  200

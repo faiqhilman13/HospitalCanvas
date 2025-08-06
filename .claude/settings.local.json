@@ -32,7 +32,8 @@
       "mcp__playwright__browser_type",
       "mcp__playwright__browser_hover",
       "Bash(cat:*)",
-      "Bash(bun list:*)"
+      "Bash(bun list:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": []
   }
