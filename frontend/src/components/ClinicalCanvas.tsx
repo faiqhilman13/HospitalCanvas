@@ -8,12 +8,15 @@ import {
   useEdgesState,
   addEdge,
   BackgroundVariant,
+  ConnectionMode,
+  Panel,
 } from '@xyflow/react'
 import type {
   Connection,
   Edge,
   Node,
   NodeTypes,
+  DefaultEdgeOptions,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
@@ -43,6 +46,22 @@ const nodeTypes: NodeTypes = {
   Timeline: PatientTimelineNode,
   analyticsReport: AnalyticsReportNode,
   systemAdmin: SystemAdminNode,
+}
+
+// Enhanced edge styling options
+const defaultEdgeOptions: DefaultEdgeOptions = {
+  type: 'smoothstep',
+  animated: true,
+  style: {
+    stroke: '#3b82f6',
+    strokeWidth: 2,
+  },
+  markerEnd: {
+    type: 'arrowclosed',
+    width: 15,
+    height: 15,
+    color: '#3b82f6',
+  },
 }
 
 // Helper function to create properly hydrated node data
@@ -271,11 +290,27 @@ const ClinicalCanvas: React.FC<ClinicalCanvasProps> = ({ patientId }) => {
         onViewportChange={onViewportChange}
         nodeTypes={nodeTypes}
         defaultViewport={viewport}
+        defaultEdgeOptions={defaultEdgeOptions}
+        connectionMode={ConnectionMode.Loose}
         attributionPosition="bottom-left"
-        minZoom={0.2}
-        maxZoom={2}
+        minZoom={0.1}
+        maxZoom={4}
         snapToGrid
-        snapGrid={[10, 10]}
+        snapGrid={[15, 15]}
+        fitView
+        fitViewOptions={{
+          padding: 0.1,
+          includeHiddenNodes: false,
+        }}
+        nodesDraggable={true}
+        nodesConnectable={true}
+        elementsSelectable={true}
+        selectNodesOnDrag={false}
+        panOnDrag={true}
+        zoomOnScroll={true}
+        zoomOnPinch={true}
+        panOnScroll={false}
+        deleteKeyCode={['Delete', 'Backspace']}
       >
         <Background 
           variant={BackgroundVariant.Dots} 
@@ -285,12 +320,26 @@ const ClinicalCanvas: React.FC<ClinicalCanvasProps> = ({ patientId }) => {
         />
         <Controls 
           className="bg-white border border-gray-200 rounded-lg shadow-sm"
+          showZoom={true}
+          showFitView={true}
+          showInteractive={true}
         />
         <MiniMap 
           className="bg-gray-100 border border-gray-200 rounded-lg"
           nodeColor="#3b82f6"
           maskColor="rgba(0, 0, 0, 0.1)"
+          nodeStrokeWidth={2}
+          pannable={true}
+          zoomable={true}
         />
+        <Panel position="top-right" className="bg-white border border-gray-200 rounded-lg shadow-sm p-2">
+          <div className="text-xs text-gray-600 space-y-1">
+            <div>🔧 <strong>Drag</strong> to move nodes</div>
+            <div>📏 <strong>Drag corners</strong> to resize</div>
+            <div>🔗 <strong>Drag handles</strong> to connect</div>
+            <div>⚡ <strong>Scroll</strong> to zoom</div>
+          </div>
+        </Panel>
       </ReactFlow>
     </div>
   )
