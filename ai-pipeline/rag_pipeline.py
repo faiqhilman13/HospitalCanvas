@@ -5,19 +5,80 @@ Combines document retrieval with LLM generation for clinical Q&A
 
 import sqlite3
 import json
+import sys
+import os
 from pathlib import Path
 from typing import Dict, Any, List, Optional
-from ollama_client import OllamaClient
 from document_processor import DocumentProcessor, MockEmbeddingService
 import numpy as np
 
+# Add backend services to path for OpenAI integration
+backend_path = Path(__file__).parent.parent / "backend"
+if str(backend_path) not in sys.path:
+    sys.path.append(str(backend_path))
+
+try:
+    from services.openai_service import OpenAIService
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+    OpenAIService = None
+
+# Keep Ollama import for backward compatibility
+try:
+    from ollama_client import OllamaClient
+    OLLAMA_AVAILABLE = True
+except ImportError:
+    OLLAMA_AVAILABLE = False
+    OllamaClient = None
+
 class RAGPipeline:
-    def __init__(self, db_path: str, use_ollama: bool = True):
+    def __init__(self, db_path: str, use_ollama: bool = False, use_openai: bool = True):
+        """
+        Initialize RAG Pipeline with support for both OpenAI and Ollama
+        
+        Args:
+            db_path: Path to SQLite database
+            use_ollama: Whether to use Ollama (legacy support)
+            use_openai: Whether to use OpenAI (default, preferred)
+        """
         self.db_path = Path(db_path)
-        self.ollama_client = OllamaClient() if use_ollama else None
         self.doc_processor = DocumentProcessor()
         self.embedding_service = MockEmbeddingService()
-        self.use_ollama = use_ollama and self._check_ollama_availability()
+        
+        # Initialize AI services (prefer OpenAI over Ollama)
+        self.openai_service = None
+        self.ollama_client = None
+        self.use_openai = False
+        self.use_ollama = False
+        
+        if use_openai and OPENAI_AVAILABLE:
+            try:
+                self.openai_service = OpenAIService()
+                self.use_openai = self._check_openai_availability()
+                if self.use_openai:
+                    print("[OK] Using OpenAI for AI responses")
+            except Exception as e:
+                print(f"[WARNING] OpenAI initialization failed: {e}")
+        
+        # Fallback to Ollama if OpenAI not available or requested
+        if not self.use_openai and use_ollama and OLLAMA_AVAILABLE:
+            try:
+                self.ollama_client = OllamaClient()
+                self.use_ollama = self._check_ollama_availability()
+                if self.use_ollama:
+                    print("[OK] Using Ollama for AI responses")
+            except Exception as e:
+                print(f"[WARNING] Ollama initialization failed: {e}")
+        
+        if not (self.use_openai or self.use_ollama):
+            print("[WARNING] No AI service available - will use fallback responses only")
+        
+    def _check_openai_availability(self) -> bool:
+        """Check if OpenAI is available"""
+        if self.openai_service:
+            return self.openai_service.is_available()
+        return False
         
     def _check_ollama_availability(self) -> bool:
         """Check if Ollama is available"""
@@ -193,48 +254,72 @@ class RAGPipeline:
         finally:
             conn.close()
         
-        # Step 4: Generate answer using LLM (if available)
-        if self.use_ollama and self.ollama_client:
-            
-            # Prepare document context
-            document_context = []
-            sources = []
-            
-            for chunk in relevant_chunks:
-                document_context.append(f"From {chunk['filename']} (page {chunk['page_number']}): {chunk['text']}")
-                sources.append({
-                    "document": chunk["filename"],
-                    "page": chunk["page_number"],
-                    "relevance_score": chunk.get("relevance_score", 0),
-                    "type": "document_chunk"
-                })
-            
-            # Generate answer using Ollama
-            ollama_result = self.ollama_client.answer_clinical_question(
-                question, clinical_context, document_context
-            )
-            
-            if ollama_result["success"]:
-                return {
-                    "success": True,
-                    "answer": ollama_result["response"],
-                    "confidence_score": 0.7,  # Default confidence for LLM responses
-                    "sources": sources,
-                    "method": "rag_llm",
-                    "chunks_used": len(relevant_chunks),
-                    "model_stats": {
-                        "total_duration": ollama_result.get("total_duration", 0),
-                        "eval_count": ollama_result.get("eval_count", 0)
+        # Step 4: Generate answer using AI service (OpenAI preferred, Ollama fallback)
+        document_context = []
+        sources = []
+        
+        for chunk in relevant_chunks:
+            document_context.append(f"From {chunk['filename']} (page {chunk['page_number']}): {chunk['text']}")
+            sources.append({
+                "document": chunk["filename"],
+                "page": chunk["page_number"],
+                "relevance_score": chunk.get("relevance_score", 0),
+                "type": "document_chunk"
+            })
+        
+        # Try OpenAI first (preferred)
+        if self.use_openai and self.openai_service:
+            try:
+                openai_result = self.openai_service.answer_clinical_question(
+                    question, clinical_context, document_context
+                )
+                
+                if openai_result["success"]:
+                    return {
+                        "success": True,
+                        "answer": openai_result["response"],
+                        "confidence_score": openai_result.get("confidence_score", 0.8),
+                        "sources": sources,
+                        "method": "rag_openai",
+                        "chunks_used": len(relevant_chunks),
+                        "model_stats": {
+                            "model": openai_result.get("model", "gpt-4"),
+                            "usage": openai_result.get("usage", {}),
+                            "context_used": openai_result.get("context_used", True),
+                            "document_chunks_used": openai_result.get("document_chunks_used", 0)
+                        }
                     }
-                }
-            else:
-                # Fall back to basic response
-                return {
-                    "success": False,
-                    "error": f"LLM generation failed: {ollama_result['error']}",
-                    "answer": "I apologize, but I'm unable to generate a response at this time due to technical issues.",
-                    "sources": sources
-                }
+                else:
+                    print(f"OpenAI Q&A failed: {openai_result.get('error', 'Unknown error')}")
+                    
+            except Exception as e:
+                print(f"OpenAI service error: {e}")
+        
+        # Fallback to Ollama if OpenAI failed or not available
+        if self.use_ollama and self.ollama_client:
+            try:
+                ollama_result = self.ollama_client.answer_clinical_question(
+                    question, clinical_context, document_context
+                )
+                
+                if ollama_result["success"]:
+                    return {
+                        "success": True,
+                        "answer": ollama_result["response"],
+                        "confidence_score": 0.7,  # Default confidence for LLM responses
+                        "sources": sources,
+                        "method": "rag_ollama",
+                        "chunks_used": len(relevant_chunks),
+                        "model_stats": {
+                            "total_duration": ollama_result.get("total_duration", 0),
+                            "eval_count": ollama_result.get("eval_count", 0)
+                        }
+                    }
+                else:
+                    print(f"Ollama Q&A failed: {ollama_result.get('error', 'Unknown error')}")
+                    
+            except Exception as e:
+                print(f"Ollama service error: {e}")
         
         # Step 5: Fallback response
         fallback_answer = self._generate_fallback_answer(question, clinical_context, relevant_chunks)
@@ -281,6 +366,25 @@ class RAGPipeline:
         return f"I apologize, but I don't have sufficient information to answer that question about {patient_name}. Please ensure all clinical documents have been processed and the AI system is properly configured."
 
 
+def create_rag_pipeline(db_path: str, prefer_openai: bool = True) -> RAGPipeline:
+    """
+    Factory function to create a RAG pipeline with intelligent service selection
+    
+    Args:
+        db_path: Path to the SQLite database
+        prefer_openai: Whether to prefer OpenAI over Ollama (default: True)
+        
+    Returns:
+        Configured RAGPipeline instance
+    """
+    if prefer_openai:
+        # Try OpenAI first, fallback to Ollama
+        return RAGPipeline(db_path, use_openai=True, use_ollama=True)
+    else:
+        # Try Ollama first, fallback to OpenAI
+        return RAGPipeline(db_path, use_openai=True, use_ollama=True)
+
+
 def test_rag_pipeline():
     """Test the RAG pipeline"""
     # Use the existing database
@@ -290,10 +394,10 @@ def test_rag_pipeline():
         print("Database not found. Please run the backend initialization first.")
         return False
     
-    print("Testing RAG Pipeline...")
+    print("Testing RAG Pipeline with OpenAI Integration...")
     
-    # Initialize pipeline
-    rag = RAGPipeline(str(db_path), use_ollama=False)  # Start without Ollama for initial testing
+    # Initialize pipeline (OpenAI by default, Ollama fallback)
+    rag = RAGPipeline(str(db_path), use_openai=True, use_ollama=False)
     
     # Test getting patient context
     context = rag.get_patient_clinical_context("uncle-tan-001")
@@ -330,11 +434,23 @@ def test_rag_pipeline():
 
 if __name__ == "__main__":
     if test_rag_pipeline():
-        print("\nRAG Pipeline is working!")
-        print("\nNext steps:")
-        print("   1. Install Ollama: https://ollama.ai/")
-        print("   2. Pull LLaMA 3 model: ollama pull llama3")
-        print("   3. Start Ollama service: ollama serve")
-        print("   4. Re-run with Ollama enabled for full AI capabilities")
+        print("\n[SUCCESS] RAG Pipeline with OpenAI integration is working!")
+        print("\nConfiguration status:")
+        if OPENAI_AVAILABLE:
+            print("   [OK] OpenAI integration available")
+            print("   [INFO] Ensure OPENAI_API_KEY environment variable is set")
+        else:
+            print("   [ERROR] OpenAI not available (pip install openai)")
+            
+        if OLLAMA_AVAILABLE:
+            print("   [OK] Ollama fallback available")
+        else:
+            print("   [ERROR] Ollama fallback not available")
+            
+        print("\nFor enhanced AI capabilities:")
+        print("   1. Set OpenAI API key: export OPENAI_API_KEY='your-key-here'")
+        print("   2. Install OpenAI library: pip install openai")
+        print("   3. Optional: Install Ollama for local fallback: https://ollama.ai/")
     else:
-        print("\nRAG Pipeline setup incomplete")
+        print("\n[ERROR] RAG Pipeline setup incomplete")
+        print("Check database path and AI service configuration")

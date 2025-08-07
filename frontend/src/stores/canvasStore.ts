@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
+import { apiClient } from '../config/api'
 import type { 
   CanvasStore, 
   PatientData, 
@@ -49,15 +50,17 @@ export const useCanvasStore = create<CanvasStore>()(
 
       loadRoleBasedLayout: async (patientId: string, role: UserRole) => {
         try {
-          const response = await fetch(`http://localhost:8000/api/patients/${patientId}?role=${role}`)
-          if (response.ok) {
-            const data = await response.json()
+          const result = await apiClient.get(`/patients/${patientId}?role=${role}`)
+          if (result.success && result.data) {
+            const data = result.data
             set({
               patientData: data,
               viewport: data.canvas_layout.viewport,
               nodes: data.canvas_layout.nodes,
               connections: data.canvas_layout.connections,
             })
+          } else {
+            console.error('Failed to load role-based layout:', result.error?.message)
           }
         } catch (error) {
           console.error('Failed to load role-based layout:', error)

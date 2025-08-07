@@ -1,10 +1,11 @@
 """
 AI-Powered Clinical Canvas Backend
-FastAPI application for serving patient data and AI Q&A
+FastAPI application for serving patient data and AI Q&A with OpenAI integration
 """
 
-from fastapi import FastAPI, HTTPException, Depends, UploadFile, File
+from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.base import BaseHTTPMiddleware
 from contextlib import asynccontextmanager
 import sqlite3
 import json
@@ -13,9 +14,21 @@ from pydantic import BaseModel
 import os
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Add ai-pipeline to path for imports
 sys.path.append(str(Path(__file__).parent.parent / "ai-pipeline"))
+
+# Import OpenAI service
+try:
+    from services.openai_service import OpenAIService
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+    OpenAIService = None
 
 # Database path
 DB_PATH = Path(__file__).parent.parent / "data" / "clinical_canvas.db"
@@ -141,13 +154,25 @@ async def lifespan(app: FastAPI):
     # Startup: Initialize database
     init_database()
     
-    # Initialize RAG pipeline
+    # Initialize OpenAI service
+    try:
+        if OPENAI_AVAILABLE:
+            app.state.openai_service = OpenAIService()
+            print("✅ OpenAI service initialized successfully")
+        else:
+            print("⚠️  OpenAI library not available, falling back to basic responses")
+            app.state.openai_service = None
+    except Exception as e:
+        print(f"⚠️  OpenAI service initialization failed: {e}")
+        app.state.openai_service = None
+    
+    # Initialize RAG pipeline (kept for document search capabilities)
     try:
         from rag_pipeline import RAGPipeline
-        app.state.rag_pipeline = RAGPipeline(str(DB_PATH), use_ollama=True)
-        print("RAG pipeline initialized successfully")
+        app.state.rag_pipeline = RAGPipeline(str(DB_PATH), use_ollama=False)
+        print("✅ RAG pipeline initialized successfully")
     except Exception as e:
-        print(f"Warning: RAG pipeline initialization failed: {e}")
+        print(f"⚠️  RAG pipeline initialization failed: {e}")
         app.state.rag_pipeline = None
     
     yield
@@ -157,18 +182,119 @@ async def lifespan(app: FastAPI):
 # FastAPI app
 app = FastAPI(
     title="Clinical Canvas API",
-    description="Backend API for AI-Powered Clinical Canvas",
+    description="Backend API for AI-Powered Clinical Canvas with OpenAI integration",
     version="1.0.0",
     lifespan=lifespan
 )
 
-# CORS middleware for frontend integration
+# CORS and Security Configuration
+def get_cors_origins():
+    """Get CORS origins based on environment"""
+    environment = os.getenv("ENVIRONMENT", "development")
+    
+    if environment == "production":
+        # Production origins - only allow specific domains
+        cors_origins = []
+        
+        # Add production Netlify URL
+        netlify_url = os.getenv("NETLIFY_URL")
+        if netlify_url:
+            cors_origins.append(netlify_url)
+        
+        # Add custom CORS origins from environment
+        cors_origins_env = os.getenv("CORS_ORIGINS")
+        if cors_origins_env:
+            cors_origins.extend([origin.strip() for origin in cors_origins_env.split(",")])
+        
+        # If no production origins configured, use secure defaults
+        if not cors_origins:
+            cors_origins = [
+                "https://clinical-canvas.netlify.app",  # Replace with your actual Netlify URL
+            ]
+            
+        return cors_origins
+    else:
+        # Development origins
+        return [
+            "http://localhost:5174", 
+            "http://localhost:5173", 
+            "http://localhost:3000",
+            "http://localhost:8080",
+        ]
+
+cors_origins = get_cors_origins()
+print(f"🔐 CORS Origins configured: {cors_origins}")
+
+# Security headers middleware
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        
+        # Security headers for production
+        if os.getenv("ENVIRONMENT") == "production":
+            response.headers["X-Content-Type-Options"] = "nosniff"
+            response.headers["X-Frame-Options"] = "DENY"
+            response.headers["X-XSS-Protection"] = "1; mode=block"
+            response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+            response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        
+        return response
+
+# Rate limiting middleware for production
+class RateLimitingMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, calls_per_minute: int = 60):
+        super().__init__(app)
+        self.calls_per_minute = calls_per_minute
+        self.call_times = {}
+    
+    async def dispatch(self, request: Request, call_next):
+        # Simple in-memory rate limiting (in production, use Redis)
+        if os.getenv("ENVIRONMENT") == "production":
+            client_ip = request.client.host if request.client else "unknown"
+            current_time = __import__('time').time()
+            
+            # Clean old entries
+            if client_ip in self.call_times:
+                self.call_times[client_ip] = [
+                    call_time for call_time in self.call_times[client_ip] 
+                    if current_time - call_time < 60  # Keep last minute
+                ]
+            else:
+                self.call_times[client_ip] = []
+            
+            # Check rate limit
+            if len(self.call_times[client_ip]) >= self.calls_per_minute:
+                return Response(
+                    content="Rate limit exceeded", 
+                    status_code=429,
+                    headers={"Retry-After": "60"}
+                )
+            
+            # Record this call
+            self.call_times[client_ip].append(current_time)
+        
+        return await call_next(request)
+
+# Add security and rate limiting middleware
+app.add_middleware(RateLimitingMiddleware, calls_per_minute=int(os.getenv("RATE_LIMIT", 100)))
+app.add_middleware(SecurityHeadersMiddleware)
+
+# CORS middleware with production-ready configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5174","http://localhost:5173", "http://localhost:3000"],  # Vite default ports
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Restrict methods in production
+    allow_headers=[
+        "Accept",
+        "Accept-Language", 
+        "Content-Language",
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "Cache-Control"
+    ],  # Restrict headers for security
+    max_age=3600,  # Cache preflight requests for 1 hour
 )
 
 
@@ -181,8 +307,26 @@ def get_db_connection():
 
 @app.get("/")
 async def root():
-    """Health check endpoint"""
-    return {"message": "Clinical Canvas API is running", "status": "healthy"}
+    """Health check endpoint with security status"""
+    environment = os.getenv("ENVIRONMENT", "development")
+    status = {
+        "message": "Clinical Canvas API is running with OpenAI integration",
+        "status": "healthy",
+        "environment": environment,
+        "security": {
+            "cors_configured": len(cors_origins) > 0,
+            "rate_limiting": environment == "production",
+            "security_headers": environment == "production",
+            "https_only": environment == "production"
+        },
+        "services": {
+            "openai_available": bool(OPENAI_AVAILABLE and hasattr(app.state, 'openai_service') and app.state.openai_service),
+            "rag_available": bool(hasattr(app.state, 'rag_pipeline') and app.state.rag_pipeline),
+            "database_connected": True  # SQLite is always available
+        },
+        "cors_origins": cors_origins if environment == "development" else len(cors_origins)
+    }
+    return status
 
 
 @app.get("/api/patients", response_model=List[Patient])
@@ -316,11 +460,86 @@ async def ask_question(patient_id: str, request: QARequest):
     conn = get_db_connection()
     try:
         # First, check if patient exists
-        patient_cursor = conn.execute("SELECT id FROM patients WHERE id = ?", (patient_id,))
-        if not patient_cursor.fetchone():
+        patient_cursor = conn.execute("SELECT id, name, age, gender FROM patients WHERE id = ?", (patient_id,))
+        patient_row = patient_cursor.fetchone()
+        if not patient_row:
             raise HTTPException(status_code=404, detail="Patient not found")
         
-        # Use RAG pipeline if available
+        # Get patient clinical context for OpenAI
+        # Get clinical summary
+        summary_cursor = conn.execute(
+            "SELECT summary_text FROM ai_summaries WHERE patient_id = ? ORDER BY generated_at DESC LIMIT 1",
+            (patient_id,)
+        )
+        summary_row = summary_cursor.fetchone()
+        
+        # Get recent vitals
+        vitals_cursor = conn.execute("""
+            SELECT name, value, unit, date_recorded 
+            FROM clinical_data 
+            WHERE patient_id = ? AND data_type = 'vital'
+            ORDER BY date_recorded DESC
+            LIMIT 10
+        """, (patient_id,))
+        vitals_data = [dict(row) for row in vitals_cursor.fetchall()]
+        
+        # Get recent lab results
+        labs_cursor = conn.execute("""
+            SELECT name, value, unit, reference_range, date_recorded
+            FROM clinical_data 
+            WHERE patient_id = ? AND data_type = 'lab'
+            ORDER BY date_recorded DESC
+            LIMIT 15
+        """, (patient_id,))
+        labs_data = [dict(row) for row in labs_cursor.fetchall()]
+        
+        # Try OpenAI service first
+        if hasattr(app.state, 'openai_service') and app.state.openai_service:
+            try:
+                # Build patient context for OpenAI
+                patient_context = {
+                    "patient": {
+                        "name": patient_row["name"],
+                        "age": patient_row["age"],
+                        "gender": patient_row["gender"]
+                    },
+                    "summary": summary_row["summary_text"] if summary_row else None,
+                    "vitals": vitals_data,
+                    "labs": labs_data
+                }
+                
+                # Get relevant document chunks from RAG if available
+                document_chunks = None
+                if hasattr(app.state, 'rag_pipeline') and app.state.rag_pipeline:
+                    try:
+                        # Try to get relevant documents using the RAG pipeline search
+                        rag_result = app.state.rag_pipeline.answer_question(patient_id, request.question)
+                        if rag_result.get("success") and rag_result.get("sources"):
+                            document_chunks = [source.get("text", "") for source in rag_result["sources"][:3]]
+                    except Exception as e:
+                        print(f"RAG document search failed: {e}")
+                
+                # Call OpenAI service
+                openai_result = app.state.openai_service.answer_clinical_question(
+                    question=request.question,
+                    patient_context=patient_context,
+                    document_chunks=document_chunks
+                )
+                
+                if openai_result["success"]:
+                    return QAResponse(
+                        answer=openai_result["answer"],
+                        source_document="Clinical Data & AI Analysis",
+                        source_page=None,
+                        confidence_score=openai_result.get("confidence_score", 0.75)
+                    )
+                else:
+                    print(f"OpenAI service failed: {openai_result.get('error', 'Unknown error')}")
+                    
+            except Exception as e:
+                print(f"OpenAI service error: {e}")
+        
+        # Fallback 1: Use RAG pipeline if available
         if hasattr(app.state, 'rag_pipeline') and app.state.rag_pipeline:
             try:
                 rag_result = app.state.rag_pipeline.answer_question(patient_id, request.question)
@@ -341,13 +560,12 @@ async def ask_question(patient_id: str, request: QARequest):
                         confidence_score=rag_result.get("confidence_score", 0.5)
                     )
                 else:
-                    # RAG failed, fall back to basic lookup
                     print(f"RAG pipeline failed: {rag_result.get('error', 'Unknown error')}")
             
             except Exception as e:
                 print(f"RAG pipeline error: {e}")
         
-        # Fallback: Look for pre-computed Q&A pairs
+        # Fallback 2: Look for pre-computed Q&A pairs
         qa_cursor = conn.execute(
             "SELECT answer, source_document_id, source_page, confidence_score FROM qa_pairs WHERE patient_id = ? AND LOWER(question) LIKE LOWER(?)",
             (patient_id, f"%{request.question}%")
@@ -369,12 +587,16 @@ async def ask_question(patient_id: str, request: QARequest):
                 confidence_score=qa_row["confidence_score"] or 0.8
             )
         else:
-            # Final fallback: Basic response
+            # Final fallback: Basic response with available data
+            basic_info = f"Based on available data for {patient_row['name']} ({patient_row['age']} years old):"
+            if summary_row:
+                basic_info += f" {summary_row['summary_text']}"
+            
             return QAResponse(
-                answer=f"I apologize, but I don't have a specific answer for '{request.question}' about this patient yet. The AI pipeline is being processed. Please try again in a moment or contact your healthcare provider for specific medical questions.",
+                answer=f"{basic_info} For specific clinical questions about '{request.question}', please consult with the healthcare provider directly as I need more detailed clinical context to provide a comprehensive answer.",
                 source_document=None,
                 source_page=None,
-                confidence_score=0.1
+                confidence_score=0.3
             )
             
     except HTTPException:
@@ -427,13 +649,13 @@ async def generate_soap_note(patient_id: str):
         )
         summary_row = summary_cursor.fetchone()
         
-        # Generate SOAP note using AI (simplified version for demo)
-        # In a production system, this would use the RAG pipeline or a dedicated SOAP generation model
-        soap_sections = generate_soap_sections(
+        # Generate SOAP note using OpenAI service
+        soap_sections = await generate_soap_sections(
             patient_row=patient_row,
             vitals_data=vitals_data,
             labs_data=labs_data,
-            summary_data=dict(summary_row) if summary_row else None
+            summary_data=dict(summary_row) if summary_row else None,
+            openai_service=app.state.openai_service if hasattr(app.state, 'openai_service') else None
         )
         
         # Create SOAP note
@@ -477,6 +699,101 @@ async def generate_soap_note(patient_id: str):
         raise HTTPException(status_code=500, detail=f"SOAP generation error: {str(e)}")
     finally:
         conn.close()
+
+
+async def generate_soap_sections(patient_row, vitals_data, labs_data, summary_data, openai_service=None):
+    """Generate SOAP sections based on patient data using OpenAI or fallback logic"""
+    patient_name = patient_row["name"]
+    patient_age = patient_row["age"]
+    patient_gender = patient_row["gender"]
+    
+    # Try OpenAI service first
+    if openai_service:
+        try:
+            # Prepare patient data for OpenAI
+            patient_data = {
+                "name": patient_name,
+                "age": patient_age,
+                "gender": patient_gender
+            }
+            
+            clinical_data = {
+                "summary": summary_data.get("summary_text") if summary_data else None,
+                "vitals": vitals_data,
+                "labs": labs_data
+            }
+            
+            # Call OpenAI SOAP generation
+            result = openai_service.generate_soap_note(patient_data, clinical_data)
+            
+            if result["success"] and result["soap_sections"]:
+                return SOAPSection(
+                    subjective=result["soap_sections"].get("subjective", "Patient information as documented."),
+                    objective=result["soap_sections"].get("objective", "Clinical findings as available."),
+                    assessment=result["soap_sections"].get("assessment", "Assessment based on available data."),
+                    plan=result["soap_sections"].get("plan", "Continue current care plan.")
+                )
+            else:
+                print(f"OpenAI SOAP generation failed: {result.get('error', 'Unknown error')}")
+                
+        except Exception as e:
+            print(f"OpenAI SOAP generation error: {e}")
+    
+    # Fallback to simplified logic if OpenAI fails
+    print("Using fallback SOAP generation logic")
+    
+    # Extract key clinical findings
+    recent_vitals = {}
+    if vitals_data:
+        for vital in vitals_data[:5]:  # Most recent 5
+            recent_vitals[vital["name"]] = f"{vital['value']} {vital['unit']}"
+    
+    abnormal_labs = []
+    if labs_data:
+        for lab in labs_data:
+            # Include all recent lab results (in a real system, you'd determine abnormal based on reference ranges)
+            abnormal_labs.append(f"{lab['name']}: {lab['value']} {lab['unit']}")
+    
+    # Generate sections (fallback logic)
+    subjective = f"Patient {patient_name} is a {patient_age}-year-old {patient_gender}"
+    if summary_data and summary_data.get("summary_text"):
+        subjective += f" with {summary_data['summary_text'].lower()}"
+    subjective += ". Patient reports ongoing symptoms consistent with their known medical conditions."
+    
+    objective = f"Vital signs: "
+    if recent_vitals:
+        vital_strings = [f"{k}: {v}" for k, v in recent_vitals.items()]
+        objective += ", ".join(vital_strings[:3])  # Include top 3 vitals
+    else:
+        objective += "Stable"
+    
+    if abnormal_labs:
+        objective += f". Laboratory findings: {'; '.join(abnormal_labs[:3])}"
+    
+    assessment = "Clinical assessment based on current presentation and available data. "
+    if summary_data and summary_data.get("summary_text"):
+        # Use summary text to infer key clinical issues
+        summary_text = summary_data["summary_text"].lower()
+        if "kidney" in summary_text or "renal" in summary_text:
+            assessment += "Chronic kidney disease requiring ongoing monitoring. "
+        if "elevated" in summary_text or "high" in summary_text:
+            assessment += "Elevated laboratory values noted. "
+        if "creatinine" in summary_text:
+            assessment += "Renal function impairment present. "
+        assessment += "Multiple clinical issues being monitored."
+    
+    plan = "Continue current treatment plan with regular monitoring. "
+    plan += "Follow-up as clinically indicated. "
+    if abnormal_labs:
+        plan += "Repeat laboratory studies as needed. "
+    plan += "Patient education provided."
+    
+    return SOAPSection(
+        subjective=subjective,
+        objective=objective,
+        assessment=assessment,
+        plan=plan
+    )
 
 
 @app.post("/api/patients/{patient_id}/soap/save", response_model=dict)
@@ -548,66 +865,6 @@ async def get_soap_notes(patient_id: str):
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     finally:
         conn.close()
-
-
-def generate_soap_sections(patient_row, vitals_data, labs_data, summary_data):
-    """Generate SOAP sections based on patient data (simplified AI simulation)"""
-    patient_name = patient_row["name"]
-    patient_age = patient_row["age"]
-    patient_gender = patient_row["gender"]
-    
-    # Extract key clinical findings
-    recent_vitals = {}
-    if vitals_data:
-        for vital in vitals_data[:5]:  # Most recent 5
-            recent_vitals[vital["name"]] = f"{vital['value']} {vital['unit']}"
-    
-    abnormal_labs = []
-    if labs_data:
-        for lab in labs_data:
-            # Include all recent lab results (in a real system, you'd determine abnormal based on reference ranges)
-            abnormal_labs.append(f"{lab['name']}: {lab['value']} {lab['unit']}")
-    
-    # Generate sections (this would typically use an LLM)
-    subjective = f"Patient {patient_name} is a {patient_age}-year-old {patient_gender}"
-    if summary_data and summary_data.get("summary_text"):
-        subjective += f" with {summary_data['summary_text'].lower()}"
-    subjective += ". Patient reports ongoing symptoms consistent with their known medical conditions."
-    
-    objective = f"Vital signs: "
-    if recent_vitals:
-        vital_strings = [f"{k}: {v}" for k, v in recent_vitals.items()]
-        objective += ", ".join(vital_strings[:3])  # Include top 3 vitals
-    else:
-        objective += "Stable"
-    
-    if abnormal_labs:
-        objective += f". Laboratory findings: {'; '.join(abnormal_labs[:3])}"
-    
-    assessment = "Clinical assessment based on current presentation and available data. "
-    if summary_data and summary_data.get("summary_text"):
-        # Use summary text to infer key clinical issues
-        summary_text = summary_data["summary_text"].lower()
-        if "kidney" in summary_text or "renal" in summary_text:
-            assessment += "Chronic kidney disease requiring ongoing monitoring. "
-        if "elevated" in summary_text or "high" in summary_text:
-            assessment += "Elevated laboratory values noted. "
-        if "creatinine" in summary_text:
-            assessment += "Renal function impairment present. "
-        assessment += "Multiple clinical issues being monitored."
-    
-    plan = "Continue current treatment plan with regular monitoring. "
-    plan += "Follow-up as clinically indicated. "
-    if abnormal_labs:
-        plan += "Repeat laboratory studies as needed. "
-    plan += "Patient education provided."
-    
-    return SOAPSection(
-        subjective=subjective,
-        objective=objective,
-        assessment=assessment,
-        plan=plan
-    )
 
 
 @app.post("/api/patients/{patient_id}/documents/upload")

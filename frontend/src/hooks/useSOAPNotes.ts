@@ -1,48 +1,44 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { SOAPNote } from '../types'
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+import { apiClient, handleApiError, getCacheConfig, API_ENDPOINTS } from '../config/api'
 
 // API functions
 async function generateSOAPNote(patientId: string): Promise<SOAPNote> {
-  const response = await fetch(`${API_BASE_URL}/patients/${patientId}/soap/generate`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`Failed to generate SOAP note: ${response.status} ${response.statusText}`)
+  const result = await apiClient.post<SOAPNote>(API_ENDPOINTS.SOAP_GENERATE(patientId))
+  
+  if (result.success && result.data) {
+    return result.data
   }
-
-  return response.json()
+  
+  throw new Error(result.error?.message || 'Failed to generate SOAP note')
 }
 
 async function saveSOAPNote(patientId: string, soapNote: SOAPNote): Promise<{success: boolean; message: string}> {
-  const response = await fetch(`${API_BASE_URL}/patients/${patientId}/soap/save`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(soapNote),
-  })
-
-  if (!response.ok) {
-    throw new Error(`Failed to save SOAP note: ${response.status} ${response.statusText}`)
+  const result = await apiClient.post<{success: boolean; message: string}>(
+    API_ENDPOINTS.SOAP_SAVE(patientId), 
+    soapNote
+  )
+  
+  if (result.success && result.data) {
+    return result.data
   }
-
-  return response.json()
+  
+  throw new Error(result.error?.message || 'Failed to save SOAP note')
 }
 
 async function fetchSOAPNotes(patientId: string): Promise<SOAPNote[]> {
-  const response = await fetch(`${API_BASE_URL}/patients/${patientId}/soap`)
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch SOAP notes: ${response.status} ${response.statusText}`)
+  const result = await apiClient.get<SOAPNote[]>(API_ENDPOINTS.SOAP_NOTES(patientId))
+  
+  if (result.success && result.data) {
+    return result.data
   }
-
-  return response.json()
+  
+  // Return empty array if no SOAP notes found (not an error condition)
+  if (result.error?.status === 404) {
+    return []
+  }
+  
+  throw new Error(result.error?.message || 'Failed to fetch SOAP notes')
 }
 
 // Hooks
@@ -71,12 +67,24 @@ export function useSaveSOAPNote(patientId: string) {
 }
 
 export function useSOAPNotes(patientId: string) {
+  const cacheConfig = getCacheConfig()
+  
   return useQuery({
     queryKey: ['soap-notes', patientId],
     queryFn: () => fetchSOAPNotes(patientId),
     enabled: !!patientId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: cacheConfig.soapNotesTTL,
+    gcTime: cacheConfig.soapNotesTTL * 2, // Double the stale time for garbage collection
+    retry: (failureCount, error) => {
+      // Don't retry on 404 errors (no SOAP notes found - this is valid)
+      if (error && typeof error === 'object' && 'status' in error && error.status === 404) {
+        return false
+      }
+      
+      // Standard retry logic for other errors
+      return failureCount < 3
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
   })
 }
 

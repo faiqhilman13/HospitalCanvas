@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react'
 import { Handle, Position, NodeResizer } from '@xyflow/react'
 import { FileText, ZoomIn, ZoomOut, Search, Download, Upload, Plus, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { apiClient } from '../../config/api'
 import type { CanvasNodeProps, DocumentViewerNodeData } from '../../types'
 
 interface EnhancedDocumentViewerNodeData extends DocumentViewerNodeData {
@@ -99,14 +100,16 @@ const DocumentViewerNode: React.FC<CanvasNodeProps> = ({ data }) => {
   const uploadDocumentToAPI = async (patientId: string, file: File) => {
     const formData = new FormData()
     formData.append('file', file)
-
-    const response = await fetch(`http://localhost:8000/api/patients/${patientId}/documents/upload`, {
+    
+    // For file uploads, we need to use a custom request without JSON content-type
+    const config = apiClient.getConfig()
+    const response = await fetch(`${config.baseUrl}/patients/${patientId}/documents/upload`, {
       method: 'POST',
       body: formData,
     })
 
     if (!response.ok) {
-      const errorData = await response.json()
+      const errorData = await response.json().catch(() => ({ detail: 'Upload failed' }))
       throw new Error(errorData.detail || 'Upload failed')
     }
 

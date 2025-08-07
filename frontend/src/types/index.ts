@@ -131,6 +131,36 @@ export interface ApiResponse<T> {
   error?: string
 }
 
+// Enhanced API Error Types
+export interface ApiError {
+  status?: number
+  statusText?: string
+  message: string
+  code?: string
+  details?: any
+  timestamp: Date
+}
+
+// API Configuration Types
+export interface ApiConfig {
+  baseUrl: string
+  timeout: number
+  retryAttempts: number
+  retryDelay: number
+  enableMockFallback: boolean
+  enableLogging: boolean
+  enableErrorReporting: boolean
+}
+
+// Loading State Helper Type
+export interface LoadingState {
+  isLoading: boolean
+  isError: boolean
+  error: string | null
+  hasData: boolean
+  isEmpty: boolean
+}
+
 export interface PatientListResponse {
   patients: Array<{
     id: string

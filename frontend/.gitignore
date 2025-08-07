@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Environment files
+.env.local
+.env*.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +26,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Production secrets (keep development and production templates)
+# .env.development and .env.production are committed as templates
+# but .env.local overrides should not be committed

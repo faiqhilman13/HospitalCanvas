@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
 import ClinicalCanvas from './ClinicalCanvas'
@@ -7,16 +6,13 @@ import PatientSelector from './PatientSelector'
 import RoleSelector from './RoleSelector'
 import { useCanvasStore } from '../stores/canvasStore'
 
-const queryClient = new QueryClient()
-
 function CanvasPage() {
   const navigate = useNavigate()
   const [selectedPatientId, setSelectedPatientId] = useState<string>('uncle-tan-001')
   const { currentRole, setCurrentRole } = useCanvasStore()
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="w-full h-screen bg-gray-50 flex flex-col">
+    <div className="w-full h-screen bg-gray-50 flex flex-col">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
@@ -53,7 +49,6 @@ function CanvasPage() {
           <ClinicalCanvas patientId={selectedPatientId} />
         </main>
       </div>
-    </QueryClientProvider>
   )
 }
 

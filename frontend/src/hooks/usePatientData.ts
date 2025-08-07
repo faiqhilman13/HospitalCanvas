@@ -1,8 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import type { PatientData, UserRole } from '../types'
-
-// Mock API base URL - will be replaced with actual backend
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+import { apiClient, handleApiError, createLoadingState, getCacheConfig, API_ENDPOINTS } from '../config/api'
 
 // Mock patient data for development
 const mockPatientData: Record<string, PatientData> = {
@@ -319,49 +317,50 @@ const mockPatientData: Record<string, PatientData> = {
 }
 
 async function fetchPatientData(patientId: string, role: UserRole = 'clinician'): Promise<PatientData> {
-  try {
-    // Try to fetch from real API first with role parameter
-    const response = await fetch(`${API_BASE_URL}/patients/${patientId}?role=${role}`)
-    
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`)
-    }
-    
-    const apiData = await response.json()
-    
+  // Try to fetch from real API first with role parameter
+  const result = await apiClient.get<any>(API_ENDPOINTS.PATIENT_ROLE_DATA(patientId, role))
+  
+  if (result.success && result.data) {
     // Transform backend API response to frontend format
+    const apiData = result.data
     const transformedData: PatientData = {
       patient: {
         id: apiData.id,
         name: apiData.name,
         age: apiData.age,
-        gender: apiData.gender.toLowerCase()
+        gender: apiData.gender?.toLowerCase() || 'unknown'
       },
       summary: {
         clinical_summary: apiData.ai_summary || 'No AI summary available',
-        key_issues: [],
+        key_issues: apiData.key_issues || [],
         urgency_level: determineUrgencyFromSummary(apiData.ai_summary || ''),
-        confidence_score: 0.85
+        confidence_score: apiData.confidence_score || 0.85
       },
       canvas_layout: {
-        viewport: apiData.canvas_layout.viewport || { x: 0, y: 0, zoom: 1 },
-        nodes: apiData.canvas_layout.nodes || [],
-        connections: apiData.canvas_layout.connections || []
+        viewport: apiData.canvas_layout?.viewport || { x: 0, y: 0, zoom: 1 },
+        nodes: apiData.canvas_layout?.nodes || [],
+        connections: apiData.canvas_layout?.connections || []
       },
       clinical_data: {
         vitals: transformVitalsData(apiData.vitals_data || []),
         labs: transformLabData(apiData.lab_results || [])
       },
       documents: apiData.documents || [],
-      qa_pairs: []
+      qa_pairs: apiData.qa_pairs || []
     }
     
     return transformedData
-    
-  } catch (error) {
-    console.warn('Failed to fetch from API, falling back to mock data:', error)
-    
-    // Fallback to mock data
+  }
+  
+  // Log the error for debugging
+  if (result.error) {
+    console.warn('Failed to fetch patient data from API, falling back to mock data:', result.error.message)
+  }
+  
+  // Check if fallback is enabled
+  const config = apiClient.getConfig()
+  if (config.enableMockFallback) {
+    // Simulate network delay for mock data
     await new Promise(resolve => setTimeout(resolve, 500))
     
     const data = mockPatientData[patientId]
@@ -371,6 +370,9 @@ async function fetchPatientData(patientId: string, role: UserRole = 'clinician')
     
     return data
   }
+  
+  // Throw error if no fallback is enabled
+  throw new Error(result.error?.message || `Failed to fetch patient data for ${patientId}`)
 }
 
 function determineUrgencyFromSummary(summary: string): 'low' | 'medium' | 'high' {
@@ -478,11 +480,29 @@ function determineFlag(value: string, referenceRange: string): 'low' | 'high' | 
 }
 
 export function usePatientData(patientId: string, role: UserRole = 'clinician') {
+  const cacheConfig = getCacheConfig()
+  
   return useQuery({
     queryKey: ['patient', patientId, role],
     queryFn: () => fetchPatientData(patientId, role),
     enabled: !!patientId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+    staleTime: cacheConfig.patientDataTTL,
+    gcTime: cacheConfig.patientDataTTL * 2, // Double the stale time for garbage collection
+    retry: (failureCount, error) => {
+      // Don't retry if we have fallback data available
+      const config = apiClient.getConfig()
+      if (config.enableMockFallback && failureCount > 1) {
+        return false
+      }
+      
+      // Don't retry on 404 errors (patient not found)
+      if (error && typeof error === 'object' && 'status' in error && error.status === 404) {
+        return false
+      }
+      
+      // Standard retry logic for network errors
+      return failureCount < 3
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
   })
 }

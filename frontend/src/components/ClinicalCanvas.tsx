@@ -22,6 +22,7 @@ import '@xyflow/react/dist/style.css'
 
 import { useCanvasStore } from '../stores/canvasStore'
 import { usePatientData } from '../hooks/usePatientData'
+import { apiClient } from '../config/api'
 import type { ClinicalCanvasProps, CanvasNode, PatientData } from '../types'
 
 // Import custom node components
@@ -124,20 +125,13 @@ const createNodeData = (nodeType: string, storedData: any, patientData: PatientD
       return {
         qa_pairs: patientData.qa_pairs || [],
         onAsk: async (question: string) => {
-          const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
-          const response = await fetch(`${API_BASE_URL}/patients/${patientData.patient.id}/ask`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ question })
-          });
+          const result = await apiClient.post<any>(`/patients/${patientData.patient.id}/ask`, { question });
           
-          if (!response.ok) {
-            throw new Error('Failed to get AI response');
+          if (!result.success || !result.data) {
+            throw new Error(result.error?.message || 'Failed to get AI response');
           }
           
-          const data = await response.json();
+          const data = result.data;
           
           // Transform backend QAResponse to frontend QAPair format
           return {

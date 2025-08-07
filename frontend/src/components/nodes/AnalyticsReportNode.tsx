@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Handle, Position, NodeResizer } from '@xyflow/react'
+import { apiClient } from '../../config/api'
 import type { CanvasNodeProps } from '../../types'
 
 interface PopulationMetric {
@@ -46,17 +47,21 @@ export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
     const fetchAnalyticsData = async () => {
       try {
         setLoading(true)
-        const [metricsRes, patternsRes, medicationsRes] = await Promise.all([
-          fetch('http://localhost:8000/api/analytics/population/metrics'),
-          fetch('http://localhost:8000/api/analytics/disease-patterns'),
-          fetch('http://localhost:8000/api/analytics/medications')
+        const [metricsResult, patternsResult, medicationsResult] = await Promise.all([
+          apiClient.get('/analytics/population/metrics'),
+          apiClient.get('/analytics/disease-patterns'),
+          apiClient.get('/analytics/medications')
         ])
 
-        const [metrics, patterns, medications] = await Promise.all([
-          metricsRes.json(),
-          patternsRes.json(),
-          medicationsRes.json()
-        ])
+        if (!metricsResult.success || !patternsResult.success || !medicationsResult.success) {
+          throw new Error('Failed to fetch analytics data')
+        }
+
+        const [metrics, patterns, medications] = [
+          metricsResult.data,
+          patternsResult.data,
+          medicationsResult.data
+        ]
 
         setAnalyticsData({
           population_metrics: metrics,
