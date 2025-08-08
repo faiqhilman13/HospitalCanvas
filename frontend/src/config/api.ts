@@ -53,7 +53,7 @@ export class ApiClient {
 
     // Fallback based on environment
     if (import.meta.env.PROD) {
-      return 'https://your-backend-app.up.railway.app/api'
+      return 'https://hospitalcanvas-production.up.railway.app/api'
     }
 
     // Development fallback

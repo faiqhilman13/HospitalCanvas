@@ -293,7 +293,7 @@ def get_cors_origins():
         # If no production origins configured, use secure defaults
         if not cors_origins:
             cors_origins = [
-                "https://clinical-canvas.netlify.app",  # Replace with your actual Netlify URL
+                "https://timely-tulumba-ac41cb.netlify.app",  # Your actual Netlify URL
             ]
             
         return cors_origins
