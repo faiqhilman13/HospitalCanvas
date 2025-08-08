@@ -9,7 +9,7 @@ openai==1.35.0
 python-dotenv==1.0.0
 
 # Additional AI libraries (simplified for Railway deployment)
-numpy==1.24.3
+# numpy==1.24.3  # Removed due to build issues on Railway
 
 # Database & ORM
 sqlalchemy==2.0.23

@@ -3,9 +3,9 @@ Simplified Document Processing for Railway deployment
 Core functionality without heavy ML dependencies
 """
 
-import numpy as np
 from typing import List, Dict, Any, Optional
 import re
+import random
 
 
 class DocumentProcessor:
@@ -44,14 +44,14 @@ class DocumentProcessor:
 class MockEmbeddingService:
     """Mock embedding service for Railway deployment"""
     
-    def generate_embeddings(self, texts: List[str]) -> List[np.ndarray]:
-        """Generate mock embeddings (simple hash-based vectors)"""
+    def generate_embeddings(self, texts: List[str]) -> List[bytes]:
+        """Generate mock embeddings (simple hash-based binary data)"""
         embeddings = []
         for text in texts:
             # Create deterministic "embedding" from text hash
             hash_val = hash(text) % (2**32)
-            # Create 384-dimensional vector (common embedding size)
-            np.random.seed(hash_val)
-            embedding = np.random.normal(0, 1, 384)
-            embeddings.append(embedding)
+            # Create simple binary representation (384 bytes)
+            random.seed(hash_val)
+            embedding_data = bytes([random.randint(0, 255) for _ in range(384)])
+            embeddings.append(embedding_data)
         return embeddings
