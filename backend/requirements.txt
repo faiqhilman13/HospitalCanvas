@@ -8,9 +8,9 @@ python-multipart==0.0.6
 openai==1.35.0
 python-dotenv==1.0.0
 
-# Additional AI libraries (optional - for RAG pipeline)
-sentence-transformers==2.2.2
-faiss-cpu==1.7.4
+# Additional AI libraries (optional - disabled for Railway deployment)
+# sentence-transformers==2.2.2
+# faiss-cpu==1.7.4
 
 # Database & ORM
 sqlalchemy==2.0.23
