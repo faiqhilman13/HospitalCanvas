@@ -415,6 +415,22 @@ async def root():
     return status
 
 
+@app.get("/api/admin/populate-analytics")
+async def populate_analytics_endpoint():
+    """Populate analytics data - admin endpoint for fixing empty Population Analytics node"""
+    try:
+        # Import the populate function
+        import sys
+        sys.path.append(str(Path(__file__).parent))
+        from populate_demo_data import populate_analytics_data
+        
+        # Run the population
+        populate_analytics_data()
+        return {"message": "Analytics data populated successfully", "status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to populate analytics data: {str(e)}")
+
+
 @app.get("/api/patients", response_model=List[Patient])
 async def get_patients():
     """Get list of all available patients"""
