@@ -21,6 +21,13 @@
   
   # NPM version  
   NPM_VERSION = "9"
+  
+  # Production API Configuration
+  VITE_API_URL = "https://hospitalcanvas-production.up.railway.app/api"
+  VITE_NODE_ENV = "production"
+  VITE_ENABLE_MOCK_DATA_FALLBACK = "true"
+  VITE_ENABLE_API_LOGGING = "false"
+  VITE_ENABLE_ERROR_REPORTING = "true"
 
 # Headers for better performance and security
 [[headers]]
