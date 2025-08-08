@@ -621,7 +621,8 @@ def populate_analytics_data():
             {
                 "id": str(uuid.uuid4()),
                 "medication_name": "Metformin",
-                "medication_type": "antidiabetic",
+                "medication_class": "antidiabetic",
+                "usage_pattern": "prescribing_trends",
                 "analytics_data": json.dumps({
                     "usage_count": 128,
                     "effectiveness_score": 0.84,
@@ -638,7 +639,8 @@ def populate_analytics_data():
             {
                 "id": str(uuid.uuid4()),
                 "medication_name": "Lisinopril", 
-                "medication_type": "ace_inhibitor",
+                "medication_class": "ace_inhibitor",
+                "usage_pattern": "adherence_rates",
                 "analytics_data": json.dumps({
                     "usage_count": 89,
                     "effectiveness_score": 0.79,
@@ -655,7 +657,8 @@ def populate_analytics_data():
             {
                 "id": str(uuid.uuid4()),
                 "medication_name": "Atorvastatin",
-                "medication_type": "statin",
+                "medication_class": "statin",
+                "usage_pattern": "effectiveness",
                 "analytics_data": json.dumps({
                     "usage_count": 156,
                     "effectiveness_score": 0.91,
@@ -675,10 +678,10 @@ def populate_analytics_data():
         for med in medication_analytics:
             conn.execute("""
                 INSERT OR REPLACE INTO medication_analytics
-                (id, medication_name, medication_type, analytics_data, calculated_date, patient_count, metadata)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                (id, medication_name, medication_class, usage_pattern, analytics_data, calculated_date, patient_count, metadata)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                med["id"], med["medication_name"], med["medication_type"],
+                med["id"], med["medication_name"], med["medication_class"], med["usage_pattern"],
                 med["analytics_data"], med["calculated_date"], med["patient_count"], med["metadata"]
             ))
             
