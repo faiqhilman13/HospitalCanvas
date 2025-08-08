@@ -569,7 +569,7 @@ def populate_analytics_data():
                 "pattern_name": "Diabetic Nephropathy Progression",
                 "pattern_type": "complication_pattern",
                 "condition_codes": json.dumps(["E11.21", "N18.6"]),
-                "affected_patients": 45,
+                "affected_patients": json.dumps(["uncle-tan-001", "mrs-chen-002", "mr-kumar-003"]),
                 "pattern_data": json.dumps({
                     "confidence_score": 0.87,
                     "key_indicators": ["Proteinuria", "Declining eGFR", "HbA1c >8%"],
@@ -588,7 +588,7 @@ def populate_analytics_data():
                 "pattern_name": "Post-MI Medication Adherence",
                 "pattern_type": "treatment_pattern",
                 "condition_codes": json.dumps(["I21.9", "Z92.82"]),
-                "affected_patients": 23,
+                "affected_patients": json.dumps(["mr-kumar-003", "uncle-tan-001"]),
                 "pattern_data": json.dumps({
                     "confidence_score": 0.72,
                     "key_indicators": ["ACE Inhibitor", "Beta Blocker", "Statin"],
@@ -632,6 +632,7 @@ def populate_analytics_data():
                         "total_prescribed": 128
                     }
                 }),
+                "time_period": "6M",
                 "calculated_date": datetime.now().isoformat(),
                 "patient_count": 128,
                 "metadata": json.dumps({"dosage": "500mg-1000mg", "frequency": "BID"})
@@ -650,6 +651,7 @@ def populate_analytics_data():
                         "total_prescribed": 89
                     }
                 }),
+                "time_period": "3M",
                 "calculated_date": datetime.now().isoformat(),
                 "patient_count": 89,
                 "metadata": json.dumps({"dosage": "10mg-40mg", "frequency": "Daily"})
@@ -668,6 +670,7 @@ def populate_analytics_data():
                         "total_prescribed": 156
                     }
                 }),
+                "time_period": "1Y",
                 "calculated_date": datetime.now().isoformat(),
                 "patient_count": 156,
                 "metadata": json.dumps({"dosage": "20mg-80mg", "frequency": "Daily"})
@@ -678,11 +681,11 @@ def populate_analytics_data():
         for med in medication_analytics:
             conn.execute("""
                 INSERT OR REPLACE INTO medication_analytics
-                (id, medication_name, medication_class, usage_pattern, analytics_data, calculated_date, patient_count, metadata)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                (id, medication_name, medication_class, usage_pattern, analytics_data, time_period, calculated_date, patient_count, metadata)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 med["id"], med["medication_name"], med["medication_class"], med["usage_pattern"],
-                med["analytics_data"], med["calculated_date"], med["patient_count"], med["metadata"]
+                med["analytics_data"], med["time_period"], med["calculated_date"], med["patient_count"], med["metadata"]
             ))
             
         conn.commit()
