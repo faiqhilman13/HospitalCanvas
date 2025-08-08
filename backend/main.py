@@ -1415,6 +1415,5 @@ async def get_role_dashboard_data(role: str):
 
 if __name__ == "__main__":
     import uvicorn
-    # Use PORT environment variable for Railway deployment
-    port = int(os.getenv("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port, reload=True)
+    # Use port 8000 for consistency with Railway configuration
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)

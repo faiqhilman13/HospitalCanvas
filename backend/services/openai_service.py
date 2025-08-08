@@ -56,13 +56,48 @@ class OpenAIService:
                 "OpenAI API key not provided. Set OPENAI_API_KEY environment variable or pass api_key parameter"
             )
             
-        # Initialize client
-        self.client = OpenAI(
-            api_key=self.api_key,
-            organization=organization,
-            timeout=timeout,
-            max_retries=max_retries
-        )
+        # Initialize client with progressive fallback
+        initialization_attempts = [
+            # Full initialization with all parameters
+            lambda: OpenAI(
+                api_key=self.api_key,
+                organization=organization,
+                timeout=timeout,
+                max_retries=max_retries
+            ),
+            # Without organization parameter
+            lambda: OpenAI(
+                api_key=self.api_key,
+                timeout=timeout,
+                max_retries=max_retries
+            ),
+            # Without timeout and max_retries
+            lambda: OpenAI(
+                api_key=self.api_key,
+                organization=organization
+            ),
+            # Minimal initialization
+            lambda: OpenAI(api_key=self.api_key)
+        ]
+        
+        self.client = None
+        last_error = None
+        
+        for attempt_func in initialization_attempts:
+            try:
+                self.client = attempt_func()
+                break
+            except TypeError as e:
+                last_error = e
+                logger.warning(f"OpenAI client initialization attempt failed: {e}")
+                continue
+            except Exception as e:
+                last_error = e
+                logger.warning(f"OpenAI client initialization attempt failed: {e}")
+                continue
+                
+        if self.client is None:
+            raise RuntimeError(f"Failed to initialize OpenAI client after all attempts. Last error: {last_error}")
         
         self.model = model
         self.max_retries = max_retries
