@@ -5,7 +5,7 @@ FastAPI application for serving patient data and AI Q&A with OpenAI integration
 
 from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from contextlib import asynccontextmanager
 import sqlite3
 import json
