@@ -138,7 +138,7 @@ def init_database():
     os.makedirs(DB_PATH.parent, exist_ok=True)
     
     # Read schema file
-    schema_path = Path(__file__).parent.parent / "data" / "schemas" / "database_schema.sql"
+    schema_path = Path(__file__).parent / "database_schema.sql"
     with open(schema_path, 'r') as f:
         schema_sql = f.read()
     
