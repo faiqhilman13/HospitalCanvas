@@ -149,10 +149,94 @@ def init_database():
     conn.close()
 
 
+def populate_demo_data_if_empty():
+    """Populate demo data if database is empty"""
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        # Check if patients already exist
+        cursor = conn.execute("SELECT COUNT(*) FROM patients")
+        count = cursor.fetchone()[0]
+        
+        if count == 0:
+            print("🔄 Database is empty, populating demo data...")
+            # Run the populate script
+            try:
+                import subprocess
+                populate_script = Path(__file__).parent / "populate_demo_data.py"
+                subprocess.run([sys.executable, str(populate_script)], check=True)
+                print("✅ Demo data populated successfully")
+            except Exception as e:
+                print(f"⚠️ Failed to populate demo data: {e}")
+                # Manual fallback - add basic patient data
+                populate_basic_demo_data(conn)
+        else:
+            print(f"ℹ️ Database already has {count} patients - skipping demo data population")
+            
+    except Exception as e:
+        print(f"⚠️ Error checking database: {e}")
+    finally:
+        conn.close()
+
+
+def populate_basic_demo_data(conn):
+    """Fallback: Add basic demo patient if populate script fails"""
+    try:
+        # Add Uncle Tan - basic patient
+        conn.execute("""
+            INSERT OR IGNORE INTO patients (id, name, age, gender, created_at, updated_at)
+            VALUES ('uncle-tan-001', 'Uncle Tan', 65, 'Male', datetime('now'), datetime('now'))
+        """)
+        
+        # Add basic AI summary
+        conn.execute("""
+            INSERT OR IGNORE INTO ai_summaries (id, patient_id, summary_text, confidence_score, generated_at)
+            VALUES ('summary-001', 'uncle-tan-001', 
+                    '65-year-old male with Stage 4 chronic kidney disease. Elevated creatinine and reduced eGFR indicate significant kidney function impairment requiring close monitoring.',
+                    0.9, datetime('now'))
+        """)
+        
+        # Add basic lab results
+        conn.execute("""
+            INSERT OR IGNORE INTO clinical_data (id, patient_id, data_type, name, value, unit, reference_range, date_recorded, created_at)
+            VALUES 
+                ('lab-001', 'uncle-tan-001', 'lab', 'Serum Creatinine', '4.2', 'mg/dL', '0.6-1.2', date('now', '-1 day'), datetime('now')),
+                ('lab-002', 'uncle-tan-001', 'lab', 'eGFR', '18', 'mL/min/1.73m²', '>60', date('now', '-1 day'), datetime('now')),
+                ('lab-003', 'uncle-tan-001', 'lab', 'BUN', '85', 'mg/dL', '7-25', date('now', '-1 day'), datetime('now'))
+        """)
+        
+        # Add basic canvas layout
+        basic_layout = {
+            "nodes": [
+                {
+                    "id": "patient-summary-1",
+                    "type": "patientSummary", 
+                    "position": {"x": 50, "y": 50},
+                    "data": {"patientId": "uncle-tan-001"}
+                }
+            ],
+            "connections": [],
+            "viewport": {"x": 0, "y": 0, "zoom": 1}
+        }
+        
+        conn.execute("""
+            INSERT OR IGNORE INTO canvas_layouts (id, patient_id, user_role, nodes, connections, viewport_x, viewport_y, viewport_zoom, created_at, updated_at)
+            VALUES ('layout-001', 'uncle-tan-001', 'clinician', ?, '[]', 0, 0, 1, datetime('now'), datetime('now'))
+        """, (json.dumps(basic_layout["nodes"]),))
+        
+        conn.commit()
+        print("✅ Basic demo data added as fallback")
+        
+    except Exception as e:
+        print(f"⚠️ Failed to add basic demo data: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Initialize database
     init_database()
+    
+    # Auto-populate demo data (check if already exists)
+    populate_demo_data_if_empty()
     
     # Initialize OpenAI service
     try:
@@ -166,9 +250,14 @@ async def lifespan(app: FastAPI):
         print(f"⚠️  OpenAI service initialization failed: {e}")
         app.state.openai_service = None
     
-    # Initialize RAG pipeline (disabled for Railway deployment)
-    print("ℹ️  RAG pipeline disabled for Railway deployment - using OpenAI fallback")
-    app.state.rag_pipeline = None
+    # Initialize RAG pipeline (kept for document search capabilities)
+    try:
+        from rag_pipeline import RAGPipeline
+        app.state.rag_pipeline = RAGPipeline(str(DB_PATH), use_ollama=False)
+        print("✅ RAG pipeline initialized successfully")
+    except Exception as e:
+        print(f"⚠️  RAG pipeline initialization failed: {e}")
+        app.state.rag_pipeline = None
     
     yield
     # Shutdown: cleanup if needed
