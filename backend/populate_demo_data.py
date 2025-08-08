@@ -482,6 +482,215 @@ def populate_role_specific_layouts():
     conn.close()
     print("Role-specific canvas layouts populated successfully")
 
+def populate_analytics_data():
+    """Populate demo analytics data for Population Analytics node"""
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        # Population metrics data
+        population_metrics = [
+            {
+                "id": str(uuid.uuid4()),
+                "metric_name": "Average HbA1c",
+                "metric_type": "diabetes_control",
+                "metric_value": json.dumps({
+                    "value": 7.2,
+                    "trend_direction": "down",
+                    "change_percentage": -5.2,
+                    "period": "3M"
+                }),
+                "time_period": "3M",
+                "calculated_date": datetime.now().isoformat(),
+                "patient_count": 150,
+                "metadata": json.dumps({"unit": "percentage", "target": "<7.0"})
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "metric_name": "CKD Prevalence",
+                "metric_type": "kidney_disease",
+                "metric_value": json.dumps({
+                    "value": 12.8,
+                    "trend_direction": "up", 
+                    "change_percentage": 2.1,
+                    "period": "6M"
+                }),
+                "time_period": "6M",
+                "calculated_date": datetime.now().isoformat(),
+                "patient_count": 89,
+                "metadata": json.dumps({"unit": "percentage", "stage": "3-5"})
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "metric_name": "Heart Disease Risk",
+                "metric_type": "cardiovascular",
+                "metric_value": json.dumps({
+                    "value": 28.4,
+                    "trend_direction": "stable",
+                    "change_percentage": -0.3,
+                    "period": "1Y"
+                }),
+                "time_period": "1Y",
+                "calculated_date": datetime.now().isoformat(),
+                "patient_count": 210,
+                "metadata": json.dumps({"unit": "percentage", "risk_level": "moderate-high"})
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "metric_name": "Readmission Rate",
+                "metric_type": "quality_metric",
+                "metric_value": json.dumps({
+                    "value": 8.7,
+                    "trend_direction": "down",
+                    "change_percentage": -12.5,
+                    "period": "6M"
+                }),
+                "time_period": "6M", 
+                "calculated_date": datetime.now().isoformat(),
+                "patient_count": 445,
+                "metadata": json.dumps({"unit": "percentage", "target": "<10.0"})
+            }
+        ]
+        
+        # Insert population metrics
+        for metric in population_metrics:
+            conn.execute("""
+                INSERT OR REPLACE INTO population_metrics 
+                (id, metric_name, metric_type, metric_value, time_period, calculated_date, patient_count, metadata)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                metric["id"], metric["metric_name"], metric["metric_type"], 
+                metric["metric_value"], metric["time_period"], metric["calculated_date"],
+                metric["patient_count"], metric["metadata"]
+            ))
+        
+        # Disease patterns data
+        disease_patterns = [
+            {
+                "id": str(uuid.uuid4()),
+                "pattern_name": "Diabetic Nephropathy Progression",
+                "pattern_type": "complication_pattern",
+                "condition_codes": json.dumps(["E11.21", "N18.6"]),
+                "affected_patients": 45,
+                "pattern_data": json.dumps({
+                    "confidence_score": 0.87,
+                    "key_indicators": ["Proteinuria", "Declining eGFR", "HbA1c >8%"],
+                    "trend_data": [
+                        {"date": "2024-01", "prevalence": 38},
+                        {"date": "2024-02", "prevalence": 42},
+                        {"date": "2024-03", "prevalence": 45}
+                    ]
+                }),
+                "confidence_score": 0.87,
+                "time_range_start": "2024-01-01",
+                "time_range_end": "2024-03-31"
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "pattern_name": "Post-MI Medication Adherence",
+                "pattern_type": "treatment_pattern",
+                "condition_codes": json.dumps(["I21.9", "Z92.82"]),
+                "affected_patients": 23,
+                "pattern_data": json.dumps({
+                    "confidence_score": 0.72,
+                    "key_indicators": ["ACE Inhibitor", "Beta Blocker", "Statin"],
+                    "trend_data": [
+                        {"date": "2024-01", "prevalence": 19},
+                        {"date": "2024-02", "prevalence": 21},
+                        {"date": "2024-03", "prevalence": 23}
+                    ]
+                }),
+                "confidence_score": 0.72,
+                "time_range_start": "2024-01-01",
+                "time_range_end": "2024-03-31"
+            }
+        ]
+        
+        # Insert disease patterns
+        for pattern in disease_patterns:
+            conn.execute("""
+                INSERT OR REPLACE INTO disease_patterns
+                (id, pattern_name, pattern_type, condition_codes, affected_patients, pattern_data, confidence_score, time_range_start, time_range_end)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                pattern["id"], pattern["pattern_name"], pattern["pattern_type"],
+                pattern["condition_codes"], pattern["affected_patients"], pattern["pattern_data"],
+                pattern["confidence_score"], pattern["time_range_start"], pattern["time_range_end"]
+            ))
+        
+        # Medication analytics data
+        medication_analytics = [
+            {
+                "id": str(uuid.uuid4()),
+                "medication_name": "Metformin",
+                "medication_type": "antidiabetic",
+                "analytics_data": json.dumps({
+                    "usage_count": 128,
+                    "effectiveness_score": 0.84,
+                    "side_effects_reported": 12,
+                    "cost_analysis": {
+                        "average_cost": 24.50,
+                        "total_prescribed": 128
+                    }
+                }),
+                "calculated_date": datetime.now().isoformat(),
+                "patient_count": 128,
+                "metadata": json.dumps({"dosage": "500mg-1000mg", "frequency": "BID"})
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "medication_name": "Lisinopril", 
+                "medication_type": "ace_inhibitor",
+                "analytics_data": json.dumps({
+                    "usage_count": 89,
+                    "effectiveness_score": 0.79,
+                    "side_effects_reported": 8,
+                    "cost_analysis": {
+                        "average_cost": 18.75,
+                        "total_prescribed": 89
+                    }
+                }),
+                "calculated_date": datetime.now().isoformat(),
+                "patient_count": 89,
+                "metadata": json.dumps({"dosage": "10mg-40mg", "frequency": "Daily"})
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "medication_name": "Atorvastatin",
+                "medication_type": "statin",
+                "analytics_data": json.dumps({
+                    "usage_count": 156,
+                    "effectiveness_score": 0.91,
+                    "side_effects_reported": 18,
+                    "cost_analysis": {
+                        "average_cost": 42.30,
+                        "total_prescribed": 156
+                    }
+                }),
+                "calculated_date": datetime.now().isoformat(),
+                "patient_count": 156,
+                "metadata": json.dumps({"dosage": "20mg-80mg", "frequency": "Daily"})
+            }
+        ]
+        
+        # Insert medication analytics  
+        for med in medication_analytics:
+            conn.execute("""
+                INSERT OR REPLACE INTO medication_analytics
+                (id, medication_name, medication_type, analytics_data, calculated_date, patient_count, metadata)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                med["id"], med["medication_name"], med["medication_type"],
+                med["analytics_data"], med["calculated_date"], med["patient_count"], med["metadata"]
+            ))
+            
+        conn.commit()
+        print("Analytics demo data populated successfully")
+        
+    except Exception as e:
+        print(f"Error populating analytics data: {e}")
+        raise
+    finally:
+        conn.close()
+
 def main():
     """Populate all demo patients"""
     print("Populating demo patient data...")
@@ -497,6 +706,9 @@ def main():
         
         # Populate role-specific layouts
         populate_role_specific_layouts()
+        
+        # Populate analytics data for Population Analytics node
+        populate_analytics_data()
         
         print("\nAll demo patients populated successfully!")
         print("Available patients:")
