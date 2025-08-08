@@ -166,14 +166,9 @@ async def lifespan(app: FastAPI):
         print(f"⚠️  OpenAI service initialization failed: {e}")
         app.state.openai_service = None
     
-    # Initialize RAG pipeline (kept for document search capabilities)
-    try:
-        from rag_pipeline import RAGPipeline
-        app.state.rag_pipeline = RAGPipeline(str(DB_PATH), use_ollama=False)
-        print("✅ RAG pipeline initialized successfully")
-    except Exception as e:
-        print(f"⚠️  RAG pipeline initialization failed: {e}")
-        app.state.rag_pipeline = None
+    # Initialize RAG pipeline (disabled for Railway deployment)
+    print("ℹ️  RAG pipeline disabled for Railway deployment - using OpenAI fallback")
+    app.state.rag_pipeline = None
     
     yield
     # Shutdown: cleanup if needed

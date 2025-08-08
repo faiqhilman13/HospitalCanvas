@@ -8,6 +8,10 @@ python-multipart==0.0.6
 openai==1.35.0
 python-dotenv==1.0.0
 
+# Additional AI libraries (optional - for RAG pipeline)
+sentence-transformers==2.2.2
+faiss-cpu==1.7.4
+
 # Database & ORM
 sqlalchemy==2.0.23
 psycopg2-binary==2.9.9
