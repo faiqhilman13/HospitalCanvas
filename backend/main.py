@@ -308,6 +308,8 @@ def get_cors_origins():
 
 cors_origins = get_cors_origins()
 print(f"🔐 CORS Origins configured: {cors_origins}")
+print(f"🌍 Environment: {os.getenv('ENVIRONMENT')}")
+print(f"🔗 CORS_ORIGINS env var: {os.getenv('CORS_ORIGINS')}")
 
 # Security headers middleware
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
