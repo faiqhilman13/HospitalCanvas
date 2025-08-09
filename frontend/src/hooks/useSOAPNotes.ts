@@ -3,8 +3,9 @@ import type { SOAPNote } from '../types'
 import { apiClient, handleApiError, getCacheConfig, API_ENDPOINTS } from '../config/api'
 
 // API functions
-async function generateSOAPNote(patientId: string): Promise<SOAPNote> {
-  const result = await apiClient.post<SOAPNote>(API_ENDPOINTS.SOAP_GENERATE(patientId))
+async function generateSOAPNote(patientId: string, questionnaire?: any): Promise<SOAPNote> {
+  const payload = questionnaire ? { questionnaire } : {}
+  const result = await apiClient.post<SOAPNote>(API_ENDPOINTS.SOAP_GENERATE(patientId), payload)
   
   if (result.success && result.data) {
     return result.data
@@ -46,7 +47,7 @@ export function useGenerateSOAPNote(patientId: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: () => generateSOAPNote(patientId),
+    mutationFn: (questionnaire?: any) => generateSOAPNote(patientId, questionnaire),
     onSuccess: () => {
       // Invalidate and refetch SOAP notes after successful generation
       queryClient.invalidateQueries({ queryKey: ['soap-notes', patientId] })

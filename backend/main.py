@@ -79,6 +79,8 @@ class SOAPNote(BaseModel):
 
 class SOAPGenerateRequest(BaseModel):
     patient_id: str
+    questionnaire_data: Optional[dict] = None
+    template_type: Optional[str] = "general_followup"
 
 
 class UserRole(BaseModel):
@@ -710,7 +712,7 @@ async def ask_question(patient_id: str, request: QARequest):
 
 
 @app.post("/api/patients/{patient_id}/soap/generate", response_model=SOAPNote)
-async def generate_soap_note(patient_id: str):
+async def generate_soap_note(patient_id: str, request: Optional[SOAPGenerateRequest] = None):
     """Generate AI-powered SOAP note for a patient"""
     import uuid
     from datetime import datetime
@@ -751,13 +753,19 @@ async def generate_soap_note(patient_id: str):
         )
         summary_row = summary_cursor.fetchone()
         
-        # Generate SOAP note using OpenAI service
+        # Extract questionnaire data if provided
+        questionnaire_data = None
+        if request and request.questionnaire_data:
+            questionnaire_data = request.questionnaire_data
+        
+        # Generate SOAP note using OpenAI service with questionnaire data
         soap_sections = await generate_soap_sections(
             patient_row=patient_row,
             vitals_data=vitals_data,
             labs_data=labs_data,
             summary_data=dict(summary_row) if summary_row else None,
-            openai_service=app.state.openai_service if hasattr(app.state, 'openai_service') else None
+            openai_service=app.state.openai_service if hasattr(app.state, 'openai_service') else None,
+            questionnaire_data=questionnaire_data
         )
         
         # Create SOAP note
@@ -803,8 +811,8 @@ async def generate_soap_note(patient_id: str):
         conn.close()
 
 
-async def generate_soap_sections(patient_row, vitals_data, labs_data, summary_data, openai_service=None):
-    """Generate SOAP sections based on patient data using OpenAI or fallback logic"""
+async def generate_soap_sections(patient_row, vitals_data, labs_data, summary_data, openai_service=None, questionnaire_data=None):
+    """Generate SOAP sections based on patient data using OpenAI with optional questionnaire data or fallback logic"""
     patient_name = patient_row["name"]
     patient_age = patient_row["age"]
     patient_gender = patient_row["gender"]
@@ -825,8 +833,12 @@ async def generate_soap_sections(patient_row, vitals_data, labs_data, summary_da
                 "labs": labs_data
             }
             
-            # Call OpenAI SOAP generation
-            result = openai_service.generate_soap_note(patient_data, clinical_data)
+            # Call OpenAI SOAP generation with questionnaire data
+            result = openai_service.generate_soap_note(
+                patient_data, 
+                clinical_data, 
+                questionnaire_data=questionnaire_data
+            )
             
             if result["success"] and result["soap_sections"]:
                 return SOAPSection(
@@ -965,6 +977,131 @@ async def get_soap_notes(patient_id: str):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        conn.close()
+
+
+@app.post("/api/patients/{patient_id}/soap/review-template", response_model=dict)
+async def generate_clinical_review_template(patient_id: str, request: dict = {}):
+    """Generate Dr. Nuqman's clinical review template for a patient"""
+    
+    conn = get_db_connection()
+    try:
+        # Check if patient exists and get basic info
+        patient_cursor = conn.execute("SELECT id, name, age, gender FROM patients WHERE id = ?", (patient_id,))
+        patient_row = patient_cursor.fetchone()
+        if not patient_row:
+            raise HTTPException(status_code=404, detail="Patient not found")
+        
+        # Get clinical data
+        vitals_cursor = conn.execute("""
+            SELECT name, value, unit, date_recorded 
+            FROM clinical_data 
+            WHERE patient_id = ? AND data_type = 'vital'
+            ORDER BY date_recorded DESC
+            LIMIT 5
+        """, (patient_id,))
+        vitals_data = [dict(row) for row in vitals_cursor.fetchall()]
+        
+        labs_cursor = conn.execute("""
+            SELECT name, value, unit, reference_range, date_recorded
+            FROM clinical_data 
+            WHERE patient_id = ? AND data_type = 'lab'
+            ORDER BY date_recorded DESC
+            LIMIT 8
+        """, (patient_id,))
+        labs_data = [dict(row) for row in labs_cursor.fetchall()]
+        
+        # Get patient summary if available
+        summary_cursor = conn.execute(
+            "SELECT summary FROM patient_summaries WHERE patient_id = ? ORDER BY created_at DESC LIMIT 1",
+            (patient_id,)
+        )
+        summary_row = summary_cursor.fetchone()
+        
+        # Prepare data for template generation
+        patient_data = {
+            "name": patient_row["name"],
+            "age": patient_row["age"],
+            "gender": patient_row["gender"]
+        }
+        
+        clinical_data = {
+            "summary": summary_row["summary"] if summary_row else None,
+            "vitals": vitals_data,
+            "labs": labs_data
+        }
+        
+        template_type = request.get("template_type", "general_followup")
+        
+        # Generate clinical review template using OpenAI service
+        if hasattr(app.state, 'openai_service') and app.state.openai_service:
+            try:
+                result = app.state.openai_service.generate_clinical_review_template(
+                    patient_data, 
+                    clinical_data,
+                    template_type
+                )
+                
+                if result["success"]:
+                    return {
+                        "success": True,
+                        "review_template": result["review_template"],
+                        "template_type": result["template_type"],
+                        "confidence_score": result["confidence_score"],
+                        "generated_by": "ai"
+                    }
+                else:
+                    print(f"OpenAI clinical review generation failed: {result.get('error', 'Unknown error')}")
+            except Exception as e:
+                print(f"OpenAI clinical review generation error: {e}")
+        
+        # Fallback to basic template
+        basic_template = f"""Clinical Review Template for {patient_data['name']}
+
+Demographics:
+- {patient_data['age']} year old {patient_data['gender'].lower()}
+- Lives with family
+- ADL independent
+
+Underlying Conditions:
+- {clinical_data['summary'] if clinical_data['summary'] else 'As documented in medical history'}
+
+Current Status:
+- Came in for follow up today
+- Keeping up well
+- Compliant to medications
+- No active issues
+- No failure symptoms
+
+Physical Examination:
+- Alert, pink, not tachypneic
+- Good hydration
+- Lungs clear
+- No pedal edema
+
+Investigations (Ix):
+- FBS, HbA1c, Creat, TC, LDL, UFEME
+
+Plan:
+- TCA RUKA 6 Months with blood ix
+- TCA STAT if unwell
+- Continue current medications
+- Advice for compliance to medications
+- Healthy lifestyle"""
+        
+        return {
+            "success": True,
+            "review_template": basic_template,
+            "template_type": template_type,
+            "confidence_score": 0.7,
+            "generated_by": "fallback"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Review template generation error: {str(e)}")
     finally:
         conn.close()
 
