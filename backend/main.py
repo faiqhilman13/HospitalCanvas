@@ -756,7 +756,8 @@ async def generate_soap_note(patient_id: str, request: Optional[SOAPGenerateRequ
         # Extract questionnaire data if provided
         questionnaire_data = None
         if request and request.questionnaire_data:
-            questionnaire_data = request.questionnaire_data
+            # Transform frontend questionnaire format to OpenAI service format
+            questionnaire_data = transform_questionnaire_for_openai(request.questionnaire_data)
         
         # Generate SOAP note using OpenAI service with questionnaire data
         soap_sections = await generate_soap_sections(
@@ -809,6 +810,87 @@ async def generate_soap_note(patient_id: str, request: Optional[SOAPGenerateRequ
         raise HTTPException(status_code=500, detail=f"SOAP generation error: {str(e)}")
     finally:
         conn.close()
+
+
+def transform_questionnaire_for_openai(questionnaire_data):
+    """Transform frontend ClinicalQuestionnaire format to OpenAI service expected format"""
+    if not questionnaire_data:
+        return None
+        
+    try:
+        transformed = {}
+        
+        # Handle subjective template
+        if 'subjective_template' in questionnaire_data:
+            subj = questionnaire_data['subjective_template']
+            
+            # Chief complaint and status
+            if subj.get('chief_complaint'):
+                transformed['chief_complaint'] = subj['chief_complaint']
+            if subj.get('current_status'):
+                transformed['patient_status'] = subj['current_status']
+            
+            # Medication compliance
+            if subj.get('medication_compliance'):
+                meds = subj['medication_compliance']
+                if meds:
+                    med_details = []
+                    for med in meds:
+                        med_info = f"{med.get('name', 'Unknown medication')}: {med.get('actual_compliance', 'unknown')} compliance"
+                        if med.get('patient_concerns'):
+                            med_info += f" - Concerns: {med['patient_concerns']}"
+                        med_details.append(med_info)
+                    transformed['medication_compliance'] = {
+                        'status': 'mixed' if len(med_details) > 1 else 'compliant',
+                        'details': '; '.join(med_details)
+                    }
+            
+            # Symptom review
+            if subj.get('symptom_review'):
+                symptoms = subj['symptom_review']
+                transformed['heart_failure_symptoms'] = {}
+                for symptom, present in symptoms.items():
+                    if present and symptom != 'other_symptoms':
+                        transformed['heart_failure_symptoms'][symptom] = 'Present'
+                if symptoms.get('other_symptoms'):
+                    transformed['heart_failure_symptoms']['other'] = ', '.join(symptoms['other_symptoms'])
+            
+            # Lifestyle factors
+            if subj.get('lifestyle_factors'):
+                lifestyle = subj['lifestyle_factors']
+                transformed['lifestyle_factors'] = {}
+                if lifestyle.get('smoking_status'):
+                    transformed['lifestyle_factors']['smoking'] = {'status': lifestyle['smoking_status']}
+                if lifestyle.get('diet_modifications'):
+                    diet_info = lifestyle['diet_modifications']
+                    if lifestyle.get('diet_description'):
+                        diet_info += f": {lifestyle['diet_description']}"
+                    transformed['lifestyle_factors']['diet'] = diet_info
+                if lifestyle.get('exercise_frequency'):
+                    exercise_info = lifestyle['exercise_frequency']
+                    if lifestyle.get('exercise_type'):
+                        exercise_info += f" - {lifestyle['exercise_type']}"
+                    transformed['lifestyle_factors']['exercise'] = exercise_info
+            
+            # Patient concerns
+            if subj.get('patient_concerns'):
+                transformed['patient_concerns'] = subj['patient_concerns']
+            
+            # Functional status
+            if subj.get('functional_status'):
+                transformed['functional_status'] = subj['functional_status']
+        
+        # Handle clinical review
+        if 'clinical_review' in questionnaire_data:
+            review = questionnaire_data['clinical_review']
+            if review.get('visit_type'):
+                transformed['visit_type'] = review['visit_type']
+        
+        return transformed
+        
+    except Exception as e:
+        print(f"Error transforming questionnaire data: {e}")
+        return None
 
 
 async def generate_soap_sections(patient_row, vitals_data, labs_data, summary_data, openai_service=None, questionnaire_data=None):

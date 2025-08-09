@@ -376,9 +376,12 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
       clinicalQuestionnaire.subjective_template.lifestyle_factors.diet_modifications !== 'none'
     )
     
+    const reviewComplete = !!clinicalQuestionnaire.clinical_review.visit_type
+    
     return {
       subjective_complete: subjectiveComplete && (medicationComplete || lifestyleComplete),
       objective_complete: true, // Objective is guidance-based, always considered "complete"
+      review_complete: reviewComplete,
       assessment_complete: !!currentNote,
       plan_complete: !!currentNote
     }

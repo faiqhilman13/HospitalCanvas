@@ -46,6 +46,17 @@ const ClinicalQuestionnairePanel: React.FC<ClinicalQuestionnairePanelProps> = ({
     onUpdate(updatedQuestionnaire)
   }, [questionnaire, onUpdate])
 
+  const updateClinicalReview = useCallback((updates: Partial<typeof questionnaire.clinical_review>) => {
+    const updatedQuestionnaire = {
+      ...questionnaire,
+      clinical_review: {
+        ...questionnaire.clinical_review,
+        ...updates
+      }
+    }
+    onUpdate(updatedQuestionnaire)
+  }, [questionnaire, onUpdate])
+
   const updateMedicationCompliance = useCallback((index: number, updates: Partial<MedicationCompliance>) => {
     const updatedMedications = [...questionnaire.subjective_template.medication_compliance]
     updatedMedications[index] = { ...updatedMedications[index], ...updates }
@@ -466,10 +477,11 @@ const ClinicalQuestionnairePanel: React.FC<ClinicalQuestionnairePanelProps> = ({
           {(['routine_follow_up', 'urgent', 'new_complaint', 'medication_review'] as const).map(type => (
             <button
               key={type}
+              onClick={() => updateClinicalReview({ visit_type: type })}
               className={`p-2 text-xs rounded-md border ${
                 questionnaire.clinical_review.visit_type === type
                   ? 'bg-clinical-blue text-white border-clinical-blue'
-                  : 'bg-white/5 border-white/30 text-white/80'
+                  : 'bg-white/5 border-white/30 text-white/80 hover:bg-white/10'
               }`}
             >
               {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}

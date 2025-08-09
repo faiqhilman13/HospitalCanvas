@@ -4,7 +4,11 @@ import { apiClient, handleApiError, getCacheConfig, API_ENDPOINTS } from '../con
 
 // API functions
 async function generateSOAPNote(patientId: string, questionnaire?: any): Promise<SOAPNote> {
-  const payload = questionnaire ? { questionnaire } : {}
+  const payload = {
+    patient_id: patientId,
+    questionnaire_data: questionnaire || null,
+    template_type: questionnaire?.template_type || "general_followup"
+  }
   const result = await apiClient.post<SOAPNote>(API_ENDPOINTS.SOAP_GENERATE(patientId), payload)
   
   if (result.success && result.data) {
@@ -95,8 +99,8 @@ export function createSOAPNoteHandlers(patientId: string) {
   const saveMutation = useSaveSOAPNote(patientId)
   const { data: existingNotes = [] } = useSOAPNotes(patientId)
 
-  const handleGenerate = async (pid: string): Promise<SOAPNote> => {
-    const result = await generateMutation.mutateAsync()
+  const handleGenerate = async (pid: string, questionnaire?: any): Promise<SOAPNote> => {
+    const result = await generateMutation.mutateAsync(questionnaire)
     return result
   }
 
