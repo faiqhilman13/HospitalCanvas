@@ -245,10 +245,10 @@ const RiskFactorAssessment: React.FC<RiskFactorAssessmentProps> = ({
 
   const getRiskColor = (level: string) => {
     const colorMap = {
-      critical: 'border-red-500 bg-red-50 text-red-800',
-      high: 'border-orange-500 bg-orange-50 text-orange-800',
-      moderate: 'border-yellow-500 bg-yellow-50 text-yellow-800',
-      low: 'border-green-500 bg-green-50 text-green-800'
+      critical: 'border-red-400/30 bg-red-500/10 text-red-200',
+      high: 'border-orange-400/30 bg-orange-500/10 text-orange-200',
+      moderate: 'border-yellow-400/30 bg-yellow-500/10 text-yellow-200',
+      low: 'border-green-400/30 bg-green-500/10 text-green-200'
     }
     return colorMap[level as keyof typeof colorMap] || colorMap.moderate
   }
@@ -292,13 +292,13 @@ const RiskFactorAssessment: React.FC<RiskFactorAssessmentProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Target className="w-5 h-5 text-clinical-blue" />
-          <h3 className="font-semibold text-gray-900">Risk Factor Assessment</h3>
+          <h3 className="font-semibold text-white">Risk Factor Assessment</h3>
         </div>
         <div className="flex items-center space-x-2">
-          <span className="text-xs text-gray-600">Health Score:</span>
+          <span className="text-xs text-white/80">Health Score:</span>
           <span className={`text-sm font-semibold px-2 py-0.5 rounded-full ${
-            overallScore >= 80 ? 'bg-green-100 text-green-800' :
-            overallScore >= 60 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+            overallScore >= 80 ? 'bg-green-500/20 text-green-200' :
+            overallScore >= 60 ? 'bg-yellow-500/20 text-yellow-200' : 'bg-red-500/20 text-red-200'
           }`}>
             {overallScore}%
           </span>
@@ -306,7 +306,7 @@ const RiskFactorAssessment: React.FC<RiskFactorAssessmentProps> = ({
       </div>
 
       {/* Overall Risk Summary */}
-      <div className="bg-gray-50 rounded-lg p-3">
+      <div className="bg-white/5 rounded-lg p-3">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium">Risk Categories</span>
           <div className="flex items-center space-x-1">
@@ -318,10 +318,10 @@ const RiskFactorAssessment: React.FC<RiskFactorAssessmentProps> = ({
           {['critical', 'high', 'moderate', 'low'].map(level => {
             const count = riskAssessments.filter(a => a.risk_level === level).length
             const colors = {
-              critical: 'bg-red-100 text-red-700',
-              high: 'bg-orange-100 text-orange-700',
-              moderate: 'bg-yellow-100 text-yellow-700',
-              low: 'bg-green-100 text-green-700'
+              critical: 'bg-red-500/10 text-red-300',
+              high: 'bg-orange-500/10 text-orange-300',
+              moderate: 'bg-yellow-500/10 text-yellow-300',
+              low: 'bg-green-500/10 text-green-300'
             }
             return (
               <div key={level} className={`text-center p-2 rounded ${colors[level as keyof typeof colors]}`}>
@@ -336,7 +336,7 @@ const RiskFactorAssessment: React.FC<RiskFactorAssessmentProps> = ({
       {/* Risk Assessments */}
       <div className="space-y-2 max-h-80 overflow-y-auto">
         {riskAssessments.length === 0 ? (
-          <div className="text-center py-6 text-gray-500">
+          <div className="text-center py-6 text-white/70">
             <Target className="w-8 h-8 mx-auto mb-2 text-gray-400" />
             <p className="text-sm">No risk factors identified</p>
           </div>
@@ -358,7 +358,7 @@ const RiskFactorAssessment: React.FC<RiskFactorAssessmentProps> = ({
                       {getRiskIcon(assessment.risk_level)}
                       <span className="text-xs capitalize font-medium">{assessment.risk_level}</span>
                     </div>
-                    <p className="text-xs text-gray-600">{assessment.current_status}</p>
+                    <p className="text-xs text-white/80">{assessment.current_status}</p>
                   </div>
                 </div>
                 <div className="text-xs text-gray-400">
@@ -367,11 +367,11 @@ const RiskFactorAssessment: React.FC<RiskFactorAssessmentProps> = ({
               </div>
 
               {expandedAssessments.has(assessment.assessment_id) && (
-                <div className="mt-3 pt-3 border-t border-gray-200 space-y-3">
+                <div className="mt-3 pt-3 border-t border-white/20 space-y-3">
                   {/* Improvement Opportunities */}
                   <div>
-                    <h4 className="text-xs font-medium text-gray-700 mb-2">Improvement Opportunities:</h4>
-                    <ul className="text-xs text-gray-600 list-disc list-inside space-y-1">
+                    <h4 className="text-xs font-medium text-white/90 mb-2">Improvement Opportunities:</h4>
+                    <ul className="text-xs text-white/80 list-disc list-inside space-y-1">
                       {assessment.improvement_opportunities.map((opportunity, index) => (
                         <li key={index}>{opportunity}</li>
                       ))}
@@ -381,8 +381,8 @@ const RiskFactorAssessment: React.FC<RiskFactorAssessmentProps> = ({
                   {/* Specific Recommendations */}
                   {assessment.specific_recommendations.length > 0 && (
                     <div>
-                      <h4 className="text-xs font-medium text-gray-700 mb-2">Specific Recommendations:</h4>
-                      <ul className="text-xs text-gray-600 list-disc list-inside space-y-1">
+                      <h4 className="text-xs font-medium text-white/90 mb-2">Specific Recommendations:</h4>
+                      <ul className="text-xs text-white/80 list-disc list-inside space-y-1">
                         {assessment.specific_recommendations.map((recommendation, index) => (
                           <li key={index}>{recommendation}</li>
                         ))}
@@ -392,12 +392,12 @@ const RiskFactorAssessment: React.FC<RiskFactorAssessmentProps> = ({
 
                   {/* Target Goals */}
                   <div>
-                    <h4 className="text-xs font-medium text-gray-700 mb-2">Target Goals:</h4>
+                    <h4 className="text-xs font-medium text-white/90 mb-2">Target Goals:</h4>
                     <div className="space-y-1">
                       {assessment.target_goals.map((goal, index) => (
                         <div key={index} className="flex items-center space-x-2 text-xs">
                           <Target className="w-3 h-3 text-gray-400" />
-                          <span className="text-gray-600">{goal}</span>
+                          <span className="text-white/80">{goal}</span>
                         </div>
                       ))}
                     </div>
@@ -405,10 +405,10 @@ const RiskFactorAssessment: React.FC<RiskFactorAssessmentProps> = ({
 
                   {/* Progress Indicators */}
                   <div>
-                    <h4 className="text-xs font-medium text-gray-700 mb-2">Progress Indicators:</h4>
+                    <h4 className="text-xs font-medium text-white/90 mb-2">Progress Indicators:</h4>
                     <div className="grid grid-cols-2 gap-2">
                       {assessment.progress_indicators.map((indicator, index) => (
-                        <div key={index} className="text-xs bg-white bg-opacity-50 rounded p-1">
+                        <div key={index} className="text-xs bg-white/10 text-white/80 rounded p-1">
                           {indicator}
                         </div>
                       ))}
@@ -416,7 +416,7 @@ const RiskFactorAssessment: React.FC<RiskFactorAssessmentProps> = ({
                   </div>
 
                   {/* Progress Update */}
-                  <div className="mt-3 pt-2 border-t border-gray-200">
+                  <div className="mt-3 pt-2 border-t border-white/20">
                     <textarea
                       placeholder="Record progress notes or updates..."
                       value={progressUpdates[assessment.assessment_id] || ''}
@@ -424,7 +424,7 @@ const RiskFactorAssessment: React.FC<RiskFactorAssessmentProps> = ({
                         ...prev,
                         [assessment.assessment_id]: e.target.value
                       }))}
-                      className="w-full text-xs border border-gray-300 rounded p-2 resize-none"
+                      className="w-full text-xs bg-white/10 text-white placeholder:text-white/50 border border-white/30 rounded p-2 resize-none focus:border-white/50 focus:outline-none"
                       rows={2}
                     />
                     <button

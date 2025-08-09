@@ -84,11 +84,11 @@ const MedicationComplianceTracker: React.FC<MedicationComplianceTrackerProps> = 
 
   const getComplianceColor = (status: string) => {
     const colorMap = {
-      'compliant': 'text-green-600 bg-green-50 border-green-200',
-      'partial': 'text-yellow-600 bg-yellow-50 border-yellow-200',
-      'non_compliant': 'text-red-600 bg-red-50 border-red-200',
-      'non-compliant': 'text-red-600 bg-red-50 border-red-200',
-      'unknown': 'text-gray-600 bg-gray-50 border-gray-200'
+      'compliant': 'text-green-200 bg-green-500/10 border-green-400/30',
+      'partial': 'text-yellow-200 bg-yellow-500/10 border-yellow-400/30',
+      'non_compliant': 'text-red-200 bg-red-500/10 border-red-400/30',
+      'non-compliant': 'text-red-200 bg-red-500/10 border-red-400/30',
+      'unknown': 'text-white/80 bg-white/5 border-white/20'
     }
     return colorMap[status as keyof typeof colorMap] || colorMap.unknown
   }
@@ -142,7 +142,7 @@ const MedicationComplianceTracker: React.FC<MedicationComplianceTrackerProps> = 
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Pill className="w-5 h-5 text-clinical-blue" />
-          <h3 className="font-semibold text-gray-900">Medication Compliance</h3>
+          <h3 className="font-semibold text-white">Medication Compliance</h3>
         </div>
         <span className="text-xs bg-clinical-blue text-white px-2 py-0.5 rounded-full">
           {insights.totalMeds} medications
@@ -150,7 +150,7 @@ const MedicationComplianceTracker: React.FC<MedicationComplianceTrackerProps> = 
       </div>
 
       {/* Compliance Overview */}
-      <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+      <div className="bg-white/5 rounded-lg p-3 space-y-2">
         <div className="flex items-center justify-between text-sm">
           <span>Overall Compliance Rate</span>
           <div className="flex items-center space-x-2">
@@ -161,7 +161,7 @@ const MedicationComplianceTracker: React.FC<MedicationComplianceTrackerProps> = 
           </div>
         </div>
         
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-white/20 rounded-full h-2">
           <div 
             className={`h-2 rounded-full ${insights.complianceRate >= 80 ? 'bg-green-500' : insights.complianceRate >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`}
             style={{ width: `${insights.complianceRate}%` }}
@@ -169,23 +169,23 @@ const MedicationComplianceTracker: React.FC<MedicationComplianceTrackerProps> = 
         </div>
 
         <div className="grid grid-cols-3 gap-2 mt-2 text-xs">
-          <div className="text-center p-2 bg-green-50 rounded">
-            <div className="font-semibold text-green-600">{insights.compliantMeds}</div>
-            <div className="text-gray-600">Compliant</div>
+          <div className="text-center p-2 bg-green-500/10 rounded">
+            <div className="font-semibold text-green-300">{insights.compliantMeds}</div>
+            <div className="text-white/80">Compliant</div>
           </div>
-          <div className="text-center p-2 bg-yellow-50 rounded">
-            <div className="font-semibold text-yellow-600">{insights.partialMeds}</div>
-            <div className="text-gray-600">Partial</div>
+          <div className="text-center p-2 bg-yellow-500/10 rounded">
+            <div className="font-semibold text-yellow-300">{insights.partialMeds}</div>
+            <div className="text-white/80">Partial</div>
           </div>
-          <div className="text-center p-2 bg-red-50 rounded">
-            <div className="font-semibold text-red-600">{insights.nonCompliantMeds}</div>
-            <div className="text-gray-600">Non-compliant</div>
+          <div className="text-center p-2 bg-red-500/10 rounded">
+            <div className="font-semibold text-red-300">{insights.nonCompliantMeds}</div>
+            <div className="text-white/80">Non-compliant</div>
           </div>
         </div>
 
         {insights.highRiskMeds > 0 && (
-          <div className="mt-2 p-2 bg-orange-50 border border-orange-200 rounded text-xs">
-            <div className="flex items-center space-x-1 text-orange-700">
+          <div className="mt-2 p-2 bg-orange-500/10 border border-orange-400/30 rounded text-xs">
+            <div className="flex items-center space-x-1 text-orange-300">
               <AlertTriangle className="w-3 h-3" />
               <span className="font-medium">{insights.highRiskMeds} medications require clinical review</span>
             </div>
@@ -196,7 +196,7 @@ const MedicationComplianceTracker: React.FC<MedicationComplianceTrackerProps> = 
       {/* Medication List */}
       <div className="space-y-2 max-h-80 overflow-y-auto">
         {currentMedications.length === 0 ? (
-          <div className="text-center py-6 text-gray-500">
+          <div className="text-center py-6 text-white/70">
             <Pill className="w-8 h-8 mx-auto mb-2 text-gray-400" />
             <p className="text-sm">No medications recorded in questionnaire</p>
           </div>
@@ -215,7 +215,7 @@ const MedicationComplianceTracker: React.FC<MedicationComplianceTrackerProps> = 
                       <AlertTriangle className="w-4 h-4 text-orange-500" />
                     )}
                   </div>
-                  <div className="text-xs text-gray-600 space-y-0.5">
+                  <div className="text-xs text-white/80 space-y-0.5">
                     <div>Dose: {compliance.prescribed_dose}</div>
                     <div>Missed: {compliance.missed_doses_per_week}/week</div>
                     <div>Last taken: {review.last_taken}</div>
@@ -226,7 +226,7 @@ const MedicationComplianceTracker: React.FC<MedicationComplianceTrackerProps> = 
                   onClick={() => setEditingMedication(
                     editingMedication === review.medication_id ? null : review.medication_id
                   )}
-                  className="p-1 text-gray-400 hover:text-gray-600"
+                  className="p-1 text-gray-400 hover:text-white/80"
                 >
                   <Edit3 className="w-4 h-4" />
                 </button>
@@ -235,12 +235,12 @@ const MedicationComplianceTracker: React.FC<MedicationComplianceTrackerProps> = 
               {/* Side Effects */}
               {compliance.side_effects && compliance.side_effects.length > 0 && (
                 <div className="mb-2">
-                  <div className="text-xs font-medium text-gray-700 mb-1">Reported Side Effects:</div>
+                  <div className="text-xs font-medium text-white/90 mb-1">Reported Side Effects:</div>
                   <div className="flex flex-wrap gap-1">
                     {compliance.side_effects.map((effect, index) => (
                       <span 
                         key={index}
-                        className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full"
+                        className="text-xs bg-red-500/20 text-red-200 px-2 py-0.5 rounded-full"
                       >
                         {effect}
                       </span>
@@ -252,23 +252,23 @@ const MedicationComplianceTracker: React.FC<MedicationComplianceTrackerProps> = 
               {/* Patient Concerns */}
               {compliance.patient_concerns && (
                 <div className="mb-2">
-                  <div className="text-xs font-medium text-gray-700 mb-1">Patient Concerns:</div>
-                  <p className="text-xs text-gray-600 italic">{compliance.patient_concerns}</p>
+                  <div className="text-xs font-medium text-white/90 mb-1">Patient Concerns:</div>
+                  <p className="text-xs text-white/80 italic">{compliance.patient_concerns}</p>
                 </div>
               )}
 
               {/* Expanded Review Section */}
               {editingMedication === review.medication_id && (
-                <div className="mt-3 pt-3 border-t border-gray-200 space-y-3">
+                <div className="mt-3 pt-3 border-t border-white/20 space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-medium text-gray-700">Effectiveness (1-5)</label>
+                      <label className="text-xs font-medium text-white/90">Effectiveness (1-5)</label>
                       <select
                         value={review.effectiveness_rating}
                         onChange={(e) => handleReviewUpdate(review.medication_id, {
                           effectiveness_rating: parseInt(e.target.value)
                         })}
-                        className="w-full text-xs border border-gray-300 rounded p-1 mt-1"
+                        className="w-full text-xs bg-white/10 text-white border border-white/30 rounded p-1 mt-1 focus:border-white/50 focus:outline-none"
                       >
                         <option value={1}>1 - Not effective</option>
                         <option value={2}>2 - Slightly effective</option>
@@ -279,13 +279,13 @@ const MedicationComplianceTracker: React.FC<MedicationComplianceTrackerProps> = 
                     </div>
                     
                     <div>
-                      <label className="text-xs font-medium text-gray-700">Satisfaction (1-5)</label>
+                      <label className="text-xs font-medium text-white/90">Satisfaction (1-5)</label>
                       <select
                         value={review.patient_satisfaction}
                         onChange={(e) => handleReviewUpdate(review.medication_id, {
                           patient_satisfaction: parseInt(e.target.value)
                         })}
-                        className="w-full text-xs border border-gray-300 rounded p-1 mt-1"
+                        className="w-full text-xs bg-white/10 text-white border border-white/30 rounded p-1 mt-1 focus:border-white/50 focus:outline-none"
                       >
                         <option value={1}>1 - Very unsatisfied</option>
                         <option value={2}>2 - Unsatisfied</option>
@@ -297,14 +297,14 @@ const MedicationComplianceTracker: React.FC<MedicationComplianceTrackerProps> = 
                   </div>
 
                   <div>
-                    <label className="text-xs font-medium text-gray-700">Clinical Notes</label>
+                    <label className="text-xs font-medium text-white/90">Clinical Notes</label>
                     <textarea
                       value={review.clinical_notes}
                       onChange={(e) => handleReviewUpdate(review.medication_id, {
                         clinical_notes: e.target.value
                       })}
                       placeholder="Add clinical observations, plan changes, etc..."
-                      className="w-full text-xs border border-gray-300 rounded p-2 mt-1 resize-none"
+                      className="w-full text-xs bg-white/10 text-white placeholder:text-white/50 border border-white/30 rounded p-2 mt-1 resize-none focus:border-white/50 focus:outline-none"
                       rows={2}
                     />
                   </div>
@@ -338,9 +338,9 @@ const MedicationComplianceTracker: React.FC<MedicationComplianceTrackerProps> = 
 
               {/* Clinical Recommendations */}
               {review.requires_adjustment && (
-                <div className="mt-2 p-2 bg-orange-50 border border-orange-200 rounded">
-                  <div className="text-xs font-medium text-orange-800 mb-1">Clinical Action Required:</div>
-                  <ul className="text-xs text-orange-700 list-disc list-inside">
+                <div className="mt-2 p-2 bg-orange-500/10 border border-orange-400/30 rounded">
+                  <div className="text-xs font-medium text-orange-200 mb-1">Clinical Action Required:</div>
+                  <ul className="text-xs text-orange-300 list-disc list-inside">
                     {compliance.actual_compliance === 'non-compliant' && (
                       <li>Address barriers to medication adherence</li>
                     )}

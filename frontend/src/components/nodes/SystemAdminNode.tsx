@@ -117,8 +117,8 @@ export default function SystemAdminNode({ id, data }: CanvasNodeProps) {
   if (loading) {
     return (
       <div className="canvas-node bg-white rounded-lg shadow-md border border-gray-200 min-w-[300px] min-h-[200px]">
-        <div className="p-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">System Administration</h3>
+        <div className="p-4 border-b border-white/10">
+          <h3 className="text-lg font-semibold text-white">System Administration</h3>
         </div>
         <div className="p-6 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -150,7 +150,7 @@ export default function SystemAdminNode({ id, data }: CanvasNodeProps) {
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">System Administration</h3>
+          <h3 className="text-lg font-semibold text-white">System Administration</h3>
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
             🔧 Admin
           </span>
@@ -163,8 +163,8 @@ export default function SystemAdminNode({ id, data }: CanvasNodeProps) {
           onClick={() => setActiveTab('metrics')}
           className={`flex-1 px-4 py-2 text-sm font-medium text-center border-b-2 transition-colors ${
             activeTab === 'metrics'
-              ? 'border-purple-500 text-purple-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              ? 'border-purple-400 text-purple-300'
+              : 'border-transparent text-white/60 hover:text-white/80'
           }`}
         >
           System Metrics
@@ -173,8 +173,8 @@ export default function SystemAdminNode({ id, data }: CanvasNodeProps) {
           onClick={() => setActiveTab('activity')}
           className={`flex-1 px-4 py-2 text-sm font-medium text-center border-b-2 transition-colors ${
             activeTab === 'activity'
-              ? 'border-purple-500 text-purple-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              ? 'border-purple-400 text-purple-300'
+              : 'border-transparent text-white/60 hover:text-white/80'
           }`}
         >
           Recent Activity
@@ -186,10 +186,10 @@ export default function SystemAdminNode({ id, data }: CanvasNodeProps) {
         {activeTab === 'metrics' && adminData && (
           <div className="grid grid-cols-2 gap-3">
             {Object.entries(adminData.system_metrics).map(([key, value]) => (
-              <div key={key} className="bg-gray-50 rounded-lg p-3">
+              <div key={key} className="bg-white/5 rounded-lg p-3">
                 <div className="flex items-center mb-2">
                   <span className="text-lg mr-2">{getMetricIcon(key)}</span>
-                  <span className="text-xs font-medium text-gray-700 uppercase tracking-wide">
+                  <span className="text-xs font-medium text-white/70 uppercase tracking-wide">
                     {key.replace('_', ' ')}
                   </span>
                 </div>
@@ -204,12 +204,12 @@ export default function SystemAdminNode({ id, data }: CanvasNodeProps) {
         {activeTab === 'activity' && adminData && (
           <div className="space-y-2">
             {adminData.recent_activity.map((activity, index) => (
-              <div key={index} className="bg-gray-50 rounded-lg p-3">
+              <div key={index} className="bg-white/5 rounded-lg p-3">
                 <div className="flex items-start space-x-2">
                   <span className="text-sm mt-0.5">{getActionIcon(activity.action)}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-900 truncate">
+                      <span className="text-sm font-medium text-white truncate">
                         {activity.user}
                       </span>
                       <span className="text-xs text-gray-500">
@@ -231,8 +231,8 @@ export default function SystemAdminNode({ id, data }: CanvasNodeProps) {
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-2 bg-gray-50 border-t border-gray-200 rounded-b-lg">
-        <div className="flex items-center justify-between text-xs text-gray-500">
+      <div className="px-4 py-2 bg-white/5 border-t border-white/10 rounded-b-lg">
+        <div className="flex items-center justify-between text-xs text-white/60">
           <span>System Status: Online</span>
           <span>Updated: {new Date().toLocaleTimeString()}</span>
         </div>

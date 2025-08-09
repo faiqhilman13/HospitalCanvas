@@ -99,7 +99,7 @@ const LabResultsNode: React.FC<CanvasNodeProps> = ({ data }) => {
       <div className="canvas-node min-w-[350px] min-h-[250px]">
         <Handle type="target" position={Position.Top} />
         <div className="flex items-center justify-center h-full">
-          <p className="text-gray-500">No lab data available</p>
+          <p className="text-white/70">No lab data available</p>
         </div>
         <Handle type="source" position={Position.Bottom} />
       </div>
@@ -113,7 +113,7 @@ const LabResultsNode: React.FC<CanvasNodeProps> = ({ data }) => {
       <div className="canvas-node min-w-[350px] min-h-[250px]">
         <Handle type="target" position={Position.Top} />
         <div className="flex items-center justify-center h-full">
-          <p className="text-gray-500">No lab results available</p>
+          <p className="text-white/70">No lab results available</p>
         </div>
         <Handle type="source" position={Position.Bottom} />
       </div>
@@ -136,11 +136,11 @@ const LabResultsNode: React.FC<CanvasNodeProps> = ({ data }) => {
 
   const getFlagColor = (flag: string) => {
     switch (flag) {
-      case 'critical': return 'text-red-700 bg-red-50 border-red-300'
-      case 'high': return 'text-orange-700 bg-orange-50 border-orange-300'
-      case 'low': return 'text-yellow-700 bg-yellow-50 border-yellow-300'
-      case 'normal': return 'text-green-700 bg-green-50 border-green-300'
-      default: return 'text-gray-700 bg-gray-50 border-gray-300'
+      case 'critical': return 'text-red-300 bg-red-500/20 border-red-400/30'
+      case 'high': return 'text-orange-300 bg-orange-500/20 border-orange-400/30'
+      case 'low': return 'text-yellow-300 bg-yellow-500/20 border-yellow-400/30'
+      case 'normal': return 'text-green-300 bg-green-500/20 border-green-400/30'
+      default: return 'text-white/70 bg-white/10 border-white/20'
     }
   }
 
@@ -180,8 +180,8 @@ const LabResultsNode: React.FC<CanvasNodeProps> = ({ data }) => {
       
       {/* Header */}
       <div className="flex items-center space-x-2 mb-3">
-        <TestTube className="w-5 h-5 text-clinical-blue" />
-        <h3 className="font-semibold text-gray-900">Laboratory Results</h3>
+        <TestTube className="w-5 h-5 text-white" />
+        <h3 className="font-semibold text-white">Laboratory Results</h3>
       </div>
 
       {/* Lab Categories */}
@@ -191,59 +191,59 @@ const LabResultsNode: React.FC<CanvasNodeProps> = ({ data }) => {
           const abnormalCount = category.tests.filter(test => test.flag !== 'normal').length
           
           return (
-            <div key={category.category} className="border border-gray-200 rounded-lg">
+            <div key={category.category} className="border border-white/10 rounded-lg">
               {/* Category Header */}
               <button
                 onClick={() => toggleCategory(category.category)}
-                className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center justify-between p-3 hover:bg-white/5 transition-colors"
               >
                 <div className="flex items-center space-x-2">
                   {isExpanded ? (
-                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                    <ChevronDown className="w-4 h-4 text-white/70" />
                   ) : (
-                    <ChevronRight className="w-4 h-4 text-gray-500" />
+                    <ChevronRight className="w-4 h-4 text-white/70" />
                   )}
-                  <span className="font-medium text-gray-900">{category.category}</span>
+                  <span className="font-medium text-white">{category.category}</span>
                   {abnormalCount > 0 && (
-                    <span className="px-1.5 py-0.5 bg-red-100 text-red-700 text-xs rounded-full">
+                    <span className="px-1.5 py-0.5 bg-red-500/20 text-red-300 text-xs rounded-full">
                       {abnormalCount}
                     </span>
                   )}
                 </div>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-white/70">
                   {category.tests.length} test{category.tests.length !== 1 ? 's' : ''}
                 </span>
               </button>
 
               {/* Category Content */}
               {isExpanded && (
-                <div className="border-t border-gray-200 bg-gray-50">
+                <div className="border-t border-white/10 bg-white/5">
                   {category.tests.map((test, index) => (
                     <div
                       key={index}
-                      className={`p-3 ${index !== category.tests.length - 1 ? 'border-b border-gray-200' : ''}`}
+                      className={`p-3 ${index !== category.tests.length - 1 ? 'border-b border-white/10' : ''}`}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2">
-                            <span className="font-medium text-gray-900 text-sm">{test.name}</span>
+                            <span className="font-medium text-white text-sm">{test.name}</span>
                             <div className={`px-1.5 py-0.5 rounded text-xs border flex items-center space-x-1 ${getFlagColor(test.flag)}`}>
                               {getFlagIcon(test.flag)}
                               <span className="capitalize">{test.flag}</span>
                             </div>
                           </div>
-                          <div className="text-sm text-gray-600 mt-1">
+                          <div className="text-sm text-white/70 mt-1">
                             Reference: {test.reference_range}
                           </div>
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className="text-xs text-white/50 mt-1">
                             {new Date(test.date).toLocaleDateString()}
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold text-gray-900">
+                          <div className="font-semibold text-white">
                             {test.value}
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-white/70">
                             {test.unit}
                           </div>
                         </div>

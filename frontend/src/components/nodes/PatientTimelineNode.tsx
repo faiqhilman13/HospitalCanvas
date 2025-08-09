@@ -42,18 +42,18 @@ const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
         
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
-            <Calendar className="w-5 h-5 text-gray-400" />
+            <Calendar className="w-5 h-5 text-white/70" />
             <div>
-              <h3 className="font-semibold text-gray-900">Patient Timeline</h3>
-              <p className="text-sm text-gray-500">Patient data not available</p>
+              <h3 className="font-semibold text-white">Patient Timeline</h3>
+              <p className="text-sm text-white/70">Patient data not available</p>
             </div>
           </div>
         </div>
 
-        <div className="text-center py-8 text-gray-500">
-          <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+        <div className="text-center py-8 text-white/70">
+          <Calendar className="w-12 h-12 mx-auto mb-3 text-white/50" />
           <p className="text-sm mb-2">Timeline data not available for this role</p>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-white/50">
             Patient timeline requires clinical context
           </p>
         </div>
@@ -83,24 +83,24 @@ const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
   // Get color scheme for event type
   const getEventColors = (type: string) => {
     switch (type) {
-      case 'visit': return 'bg-blue-50 border-blue-200 text-blue-700'
-      case 'lab': return 'bg-green-50 border-green-200 text-green-700'
-      case 'vital': return 'bg-purple-50 border-purple-200 text-purple-700'
-      case 'document': return 'bg-gray-50 border-gray-200 text-gray-700'
-      case 'procedure': return 'bg-orange-50 border-orange-200 text-orange-700'
-      case 'medication': return 'bg-pink-50 border-pink-200 text-pink-700'
-      default: return 'bg-gray-50 border-gray-200 text-gray-700'
+      case 'visit': return 'bg-blue-500/20 border-blue-400/30 text-blue-300'
+      case 'lab': return 'bg-green-500/20 border-green-400/30 text-green-300'
+      case 'vital': return 'bg-purple-500/20 border-purple-400/30 text-purple-300'
+      case 'document': return 'bg-white/10 border-white/20 text-white/70'
+      case 'procedure': return 'bg-orange-500/20 border-orange-400/30 text-orange-300'
+      case 'medication': return 'bg-pink-500/20 border-pink-400/30 text-pink-300'
+      default: return 'bg-white/10 border-white/20 text-white/70'
     }
   }
 
   // Get urgency colors
   const getUrgencyColors = (urgency?: string) => {
     switch (urgency) {
-      case 'critical': return 'border-l-red-500 bg-red-50'
-      case 'high': return 'border-l-orange-500 bg-orange-50'
-      case 'medium': return 'border-l-yellow-500 bg-yellow-50'
-      case 'low': return 'border-l-green-500 bg-green-50'
-      default: return 'border-l-gray-300 bg-white'
+      case 'critical': return 'border-l-red-500 bg-red-500/10'
+      case 'high': return 'border-l-orange-500 bg-orange-500/10'
+      case 'medium': return 'border-l-yellow-500 bg-yellow-500/10'
+      case 'low': return 'border-l-green-500 bg-green-500/10'
+      default: return 'border-l-white/30 bg-white/5'
     }
   }
 
@@ -187,10 +187,10 @@ const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <Calendar className="w-5 h-5 text-clinical-blue" />
+          <Calendar className="w-5 h-5 text-white" />
           <div>
-            <h3 className="font-semibold text-gray-900">Patient Timeline</h3>
-            <p className="text-sm text-gray-600">{patient.name} • {filteredEvents.length} events</p>
+            <h3 className="font-semibold text-white">Patient Timeline</h3>
+            <p className="text-sm text-white/70">{patient.name} • {filteredEvents.length} events</p>
           </div>
         </div>
         
@@ -198,7 +198,7 @@ const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
           {/* Sort toggle */}
           <button
             onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-            className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors text-xs"
+            className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-md transition-colors text-xs"
             title={`Sort ${sortOrder === 'desc' ? 'oldest first' : 'newest first'}`}
           >
             {sortOrder === 'desc' ? '↓' : '↑'}
@@ -206,7 +206,7 @@ const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
           
           {/* Filter dropdown */}
           <div className="relative">
-            <button className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors">
+            <button className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-md transition-colors">
               <Filter className="w-4 h-4" />
             </button>
           </div>
@@ -214,7 +214,7 @@ const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
       </div>
 
       {/* Event Type Filters */}
-      <div className="mb-4 p-2 bg-gray-50 rounded-lg">
+      <div className="mb-4 p-2 bg-white/5 rounded-lg">
         <div className="flex flex-wrap gap-1">
           {eventTypeOptions.map(eventType => (
             <button
@@ -223,7 +223,7 @@ const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
               className={`px-2 py-1 text-xs rounded-md transition-colors ${
                 selectedEventTypes.has(eventType)
                   ? getEventColors(eventType)
-                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  : 'bg-white/10 text-white/70 hover:bg-white/20'
               }`}
             >
               <div className="flex items-center space-x-1">
@@ -238,8 +238,8 @@ const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
       {/* Timeline */}
       <div className="max-h-96 overflow-y-auto">
         {filteredEvents.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+          <div className="text-center py-8 text-white/70">
+            <Calendar className="w-12 h-12 mx-auto mb-3 text-white/50" />
             <p className="text-sm">No events found for selected filters</p>
           </div>
         ) : (
@@ -247,8 +247,8 @@ const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
             {Object.entries(groupedEvents).map(([dateKey, dayEvents]) => (
               <div key={dateKey} className="relative">
                 {/* Date header */}
-                <div className="sticky top-0 bg-white z-10 py-2 border-b border-gray-200">
-                  <h4 className="font-medium text-gray-800 text-sm">{dateKey}</h4>
+                <div className="sticky top-0 bg-gray-900/95 z-10 py-2 border-b border-white/10">
+                  <h4 className="font-medium text-white text-sm">{dateKey}</h4>
                 </div>
                 
                 {/* Events for this date */}
@@ -256,7 +256,7 @@ const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
                   {dayEvents.map((event, index) => (
                     <div key={event.id} className="relative">
                       {/* Timeline line */}
-                      <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-gray-200" 
+                      <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-white/20" 
                            style={{ display: index === dayEvents.length - 1 ? 'none' : 'block' }} />
                       
                       {/* Event card */}
@@ -274,30 +274,30 @@ const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
                                 {getEventIcon(event.type)}
                                 <span className="capitalize">{event.type}</span>
                               </div>
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-white/50">
                                 {new Date(event.date).toLocaleTimeString()}
                               </span>
                               {event.urgency && (
                                 <span className={`px-1.5 py-0.5 text-xs rounded ${
-                                  event.urgency === 'critical' ? 'bg-red-100 text-red-700' :
-                                  event.urgency === 'high' ? 'bg-orange-100 text-orange-700' :
-                                  event.urgency === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                                  'bg-green-100 text-green-700'
+                                  event.urgency === 'critical' ? 'bg-red-500/20 text-red-300' :
+                                  event.urgency === 'high' ? 'bg-orange-500/20 text-orange-300' :
+                                  event.urgency === 'medium' ? 'bg-yellow-500/20 text-yellow-300' :
+                                  'bg-green-500/20 text-green-300'
                                 }`}>
                                   {event.urgency}
                                 </span>
                               )}
                             </div>
                             
-                            <h5 className="font-medium text-gray-900 text-sm mb-1">{event.title}</h5>
-                            <p className="text-sm text-gray-700 mb-2">{event.description}</p>
+                            <h5 className="font-medium text-white text-sm mb-1">{event.title}</h5>
+                            <p className="text-sm text-white/80 mb-2">{event.description}</p>
                             
                             {/* Expandable details */}
                             {event.details && (
                               <div>
                                 <button
                                   onClick={() => toggleEventExpansion(event.id)}
-                                  className="flex items-center space-x-1 text-xs text-clinical-blue hover:text-blue-700"
+                                  className="flex items-center space-x-1 text-xs text-blue-300 hover:text-blue-200"
                                 >
                                   {expandedEvents.has(event.id) ? (
                                     <ChevronDown className="w-3 h-3" />
@@ -308,8 +308,8 @@ const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
                                 </button>
                                 
                                 {expandedEvents.has(event.id) && (
-                                  <div className="mt-2 p-2 bg-gray-50 rounded text-xs">
-                                    <pre className="whitespace-pre-wrap text-gray-700">
+                                  <div className="mt-2 p-2 bg-white/5 rounded text-xs">
+                                    <pre className="whitespace-pre-wrap text-white/80">
                                       {typeof event.details === 'string' 
                                         ? event.details 
                                         : JSON.stringify(event.details, null, 2)
@@ -332,8 +332,8 @@ const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
       </div>
 
       {/* Summary */}
-      <div className="mt-4 pt-3 border-t border-gray-200">
-        <div className="flex justify-between text-xs text-gray-500">
+      <div className="mt-4 pt-3 border-t border-white/10">
+        <div className="flex justify-between text-xs text-white/50">
           <span>{filteredEvents.length} events shown</span>
           {dateRange && (
             <span>

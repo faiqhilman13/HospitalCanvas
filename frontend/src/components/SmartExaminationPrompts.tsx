@@ -234,9 +234,9 @@ const SmartExaminationPrompts: React.FC<SmartExaminationPromptsProps> = ({
 
   const getPriorityColor = (priority: SmartExaminationHint['priority']) => {
     const colorMap = {
-      high: 'border-red-200 bg-red-50 text-red-800',
-      medium: 'border-yellow-200 bg-yellow-50 text-yellow-800',
-      low: 'border-blue-200 bg-blue-50 text-blue-800'
+      high: 'border-red-400/30 bg-red-500/10 text-red-200',
+      medium: 'border-yellow-400/30 bg-yellow-500/10 text-yellow-200',
+      low: 'border-blue-400/30 bg-blue-500/10 text-blue-200'
     }
     return colorMap[priority]
   }
@@ -245,15 +245,15 @@ const SmartExaminationPrompts: React.FC<SmartExaminationPromptsProps> = ({
     <div className="space-y-4">
       <div className="flex items-center space-x-2 mb-4">
         <Stethoscope className="w-5 h-5 text-clinical-blue" />
-        <h3 className="font-semibold text-gray-900">Smart Examination Prompts</h3>
+        <h3 className="font-semibold text-white">Smart Examination Prompts</h3>
         <span className="text-xs bg-clinical-blue text-white px-2 py-0.5 rounded-full">
           {smartHints.length} hints
         </span>
       </div>
 
       {smartHints.length === 0 ? (
-        <div className="text-center py-6 text-gray-500">
-          <Info className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+        <div className="text-center py-6 text-white/70">
+          <Info className="w-8 h-8 mx-auto mb-2 text-white/60" />
           <p className="text-sm">No specific examination hints for this patient profile</p>
         </div>
       ) : (
@@ -280,11 +280,11 @@ const SmartExaminationPrompts: React.FC<SmartExaminationPromptsProps> = ({
                     </div>
                     <div className="flex items-center space-x-2 text-xs">
                       <span className="capitalize">{hint.category}</span>
-                      <span className="text-gray-400">•</span>
+                      <span className="text-white/60">•</span>
                       <span className="capitalize">{hint.priority} priority</span>
                       {hint.condition_specific.length > 0 && (
                         <>
-                          <span className="text-gray-400">•</span>
+                          <span className="text-white/60">•</span>
                           <span>{hint.condition_specific.join(', ')}</span>
                         </>
                       )}
@@ -295,15 +295,15 @@ const SmartExaminationPrompts: React.FC<SmartExaminationPromptsProps> = ({
               </div>
 
               {expandedHints.has(hint.id) && (
-                <div className="mt-3 pt-3 border-t border-gray-200">
+                <div className="mt-3 pt-3 border-t border-white/20">
                   <div className="mb-3">
-                    <p className="text-xs font-medium text-gray-700 mb-1">Clinical Rationale:</p>
-                    <p className="text-xs text-gray-600">{hint.clinical_rationale}</p>
+                    <p className="text-xs font-medium text-white/90 mb-1">Clinical Rationale:</p>
+                    <p className="text-xs text-white/80">{hint.clinical_rationale}</p>
                   </div>
 
                   <div className="mb-3">
-                    <p className="text-xs font-medium text-gray-700 mb-1">Abnormal Findings to Watch For:</p>
-                    <ul className="text-xs text-gray-600 list-disc list-inside space-y-0.5">
+                    <p className="text-xs font-medium text-white/90 mb-1">Abnormal Findings to Watch For:</p>
+                    <ul className="text-xs text-white/80 list-disc list-inside space-y-0.5">
                       {hint.abnormal_findings_guidance.map((finding, index) => (
                         <li key={index}>{finding}</li>
                       ))}
@@ -312,12 +312,12 @@ const SmartExaminationPrompts: React.FC<SmartExaminationPromptsProps> = ({
 
                   {hint.risk_factors_addressed.length > 0 && (
                     <div className="mb-3">
-                      <p className="text-xs font-medium text-gray-700 mb-1">Risk Factors Addressed:</p>
+                      <p className="text-xs font-medium text-white/90 mb-1">Risk Factors Addressed:</p>
                       <div className="flex flex-wrap gap-1">
                         {hint.risk_factors_addressed.map((risk, index) => (
                           <span 
                             key={index}
-                            className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full"
+                            className="text-xs bg-white/20 text-white/90 px-2 py-0.5 rounded-full"
                           >
                             {risk.replace('_', ' ')}
                           </span>
@@ -330,7 +330,7 @@ const SmartExaminationPrompts: React.FC<SmartExaminationPromptsProps> = ({
                     <div className="mt-3">
                       <textarea
                         placeholder="Record your examination findings..."
-                        className="w-full text-xs border border-gray-300 rounded p-2 resize-none"
+                        className="w-full text-xs bg-white/10 text-white placeholder:text-white/50 border border-white/30 rounded p-2 resize-none focus:border-white/50 focus:outline-none"
                         rows={2}
                         value={hintFindings[hint.id] || ''}
                         onChange={(e) => setHintFindings(prev => ({ ...prev, [hint.id]: e.target.value }))}
@@ -346,9 +346,9 @@ const SmartExaminationPrompts: React.FC<SmartExaminationPromptsProps> = ({
                   )}
 
                   {appliedHints.has(hint.id) && hintFindings[hint.id] && (
-                    <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded">
-                      <p className="text-xs font-medium text-green-800 mb-1">Recorded Findings:</p>
-                      <p className="text-xs text-green-700">{hintFindings[hint.id]}</p>
+                    <div className="mt-3 p-2 bg-green-500/10 border border-green-400/30 rounded">
+                      <p className="text-xs font-medium text-green-200 mb-1">Recorded Findings:</p>
+                      <p className="text-xs text-green-300">{hintFindings[hint.id]}</p>
                     </div>
                   )}
                 </div>

@@ -38,28 +38,44 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
   // Add null safety check for patient data
   if (!patient) {
     return (
-      <div className="canvas-node min-w-[400px] max-w-[500px]">
-        <Handle type="target" position={Position.Top} />
+      <div className="canvas-node min-w-[400px] max-w-[500px] animate-fade-in">
+        <Handle 
+          type="target" 
+          position={Position.Top}
+          style={{
+            backgroundColor: '#10b981',
+            border: '2px solid white',
+            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+          }}
+        />
         
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
-            <FileText className="w-5 h-5 text-gray-400" />
+            <FileText className="w-5 h-5 text-white/70" />
             <div>
-              <h3 className="font-semibold text-gray-900">SOAP Note Generator</h3>
-              <p className="text-sm text-gray-500">Patient data not available</p>
+              <h3 className="font-semibold text-white">SOAP Note Generator</h3>
+              <p className="text-sm text-white/70">Patient data not available</p>
             </div>
           </div>
         </div>
 
-        <div className="text-center py-8 text-gray-500">
-          <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+        <div className="text-center py-8 text-white/70">
+          <FileText className="w-12 h-12 mx-auto mb-3 text-white/50" />
           <p className="text-sm mb-2">Patient data not available for this role</p>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-white/50">
             SOAP note generation requires patient context
           </p>
         </div>
 
-        <Handle type="source" position={Position.Bottom} />
+        <Handle 
+          type="source" 
+          position={Position.Bottom}
+          style={{
+            backgroundColor: '#ef4444',
+            border: '2px solid white',
+            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+          }}
+        />
       </div>
     )
   }
@@ -378,13 +394,13 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
 
   // Rendering helpers for different view modes
   const renderViewModeSelector = () => (
-    <div className="flex items-center bg-gray-100 rounded-lg p-1 mb-4 flex-wrap gap-1">
+    <div className="flex items-center bg-white/5 rounded-lg p-1 mb-4 flex-wrap gap-1">
       <button
         onClick={() => setViewMode('questionnaire')}
         className={`flex items-center space-x-1 px-2 py-1.5 rounded-md text-xs transition-colors ${
           viewMode === 'questionnaire'
-            ? 'bg-clinical-blue text-white'
-            : 'text-gray-600 hover:bg-gray-200'
+            ? 'bg-blue-500 text-white'
+            : 'text-white/70 hover:bg-white/10'
         }`}
       >
         <ClipboardList className="w-3 h-3" />
@@ -398,8 +414,8 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
         onClick={() => setViewMode('examination')}
         className={`flex items-center space-x-1 px-2 py-1.5 rounded-md text-xs transition-colors ${
           viewMode === 'examination'
-            ? 'bg-clinical-blue text-white'
-            : 'text-gray-600 hover:bg-gray-200'
+            ? 'bg-blue-500 text-white'
+            : 'text-white/70 hover:bg-white/10'
         }`}
       >
         <Brain className="w-3 h-3" />
@@ -410,8 +426,8 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
         onClick={() => setViewMode('medication')}
         className={`flex items-center space-x-1 px-2 py-1.5 rounded-md text-xs transition-colors ${
           viewMode === 'medication'
-            ? 'bg-clinical-blue text-white'
-            : 'text-gray-600 hover:bg-gray-200'
+            ? 'bg-blue-500 text-white'
+            : 'text-white/70 hover:bg-white/10'
         }`}
       >
         <Pill className="w-3 h-3" />
@@ -422,8 +438,8 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
         onClick={() => setViewMode('risk_factors')}
         className={`flex items-center space-x-1 px-2 py-1.5 rounded-md text-xs transition-colors ${
           viewMode === 'risk_factors'
-            ? 'bg-clinical-blue text-white'
-            : 'text-gray-600 hover:bg-gray-200'
+            ? 'bg-blue-500 text-white'
+            : 'text-white/70 hover:bg-white/10'
         }`}
       >
         <Target className="w-3 h-3" />
@@ -434,8 +450,8 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
         onClick={() => setViewMode('soap')}
         className={`flex items-center space-x-1 px-2 py-1.5 rounded-md text-xs transition-colors ${
           viewMode === 'soap'
-            ? 'bg-clinical-blue text-white'
-            : 'text-gray-600 hover:bg-gray-200'
+            ? 'bg-blue-500 text-white'
+            : 'text-white/70 hover:bg-white/10'
         }`}
       >
         <FileText className="w-3 h-3" />
@@ -452,15 +468,15 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
     
     return (
       <div className="mb-4">
-        <h4 className="font-medium text-gray-800 mb-2 flex items-center">
-          <span className="w-6 h-6 rounded-full bg-clinical-blue text-white text-xs flex items-center justify-center mr-2">
+        <h4 className="font-medium text-white mb-2 flex items-center">
+          <span className="w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mr-2">
             {title[0]}
           </span>
           {title}
         </h4>
         
         {isStructured ? (
-          <div className="bg-gray-50 p-3 rounded-md space-y-2">
+          <div className="bg-white/5 p-3 rounded-md space-y-2">
             {sectionKey === 'subjective' && (
               <>
                 <div className="text-sm">
@@ -486,7 +502,7 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
             
             {sectionKey === 'objective' && (
               <>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-white/70">
                   Physical examination guidance provided based on {clinicalQuestionnaire.template_type} template
                 </div>
                 {data.clinical_findings_summary && (
@@ -538,7 +554,7 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
             )}
           </div>
         ) : (
-          <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-md">
+          <p className="text-sm text-white/90 leading-relaxed bg-white/5 p-3 rounded-md border border-white/10">
             {data || `No ${title.toLowerCase()} information available`}
           </p>
         )}
@@ -556,24 +572,35 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
         shouldResize={() => true}
         handleStyle={{
           backgroundColor: '#f59e0b',
-          width: '8px',
-          height: '8px',
+          width: '10px',
+          height: '10px',
           border: '2px solid white',
+          borderRadius: '50%',
+          boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
         }}
         lineStyle={{
           borderColor: '#f59e0b',
           borderWidth: '2px',
+          borderStyle: 'dashed'
         }}
       />
-      <Handle type="target" position={Position.Top} />
+      <Handle 
+        type="target" 
+        position={Position.Top}
+        style={{
+          backgroundColor: '#10b981',
+          border: '2px solid white',
+          boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+        }}
+      />
       
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <FileText className="w-5 h-5 text-clinical-blue" />
+          <FileText className="w-5 h-5 text-white" />
           <div>
-            <h3 className="font-semibold text-gray-900">SOAP Note Generator</h3>
-            <p className="text-sm text-gray-600 flex items-center">
+            <h3 className="font-semibold text-white">SOAP Note Generator</h3>
+            <p className="text-sm text-white/70 flex items-center">
               <User className="w-3 h-3 mr-1" />
               {patient.name}
             </p>
@@ -585,7 +612,7 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
             <>
               <button
                 onClick={() => setIsEditing(!isEditing)}
-                className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+                className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-md transition-colors"
                 title="Edit SOAP Note"
               >
                 <Edit3 className="w-4 h-4" />
@@ -604,7 +631,7 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
           <button
             onClick={handleGenerate}
             disabled={isGenerating}
-            className="flex items-center space-x-1 px-3 py-1.5 bg-clinical-blue text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm"
+            className="flex items-center space-x-1 px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50 text-sm"
           >
             <Sparkles className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
             <span>{isGenerating ? 'Generating...' : 'Generate'}</span>
@@ -616,8 +643,8 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
       {renderViewModeSelector()}
 
       {/* Clinical Template Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-        <div className="flex items-center space-x-2 text-sm text-blue-800">
+      <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-3 mb-4">
+        <div className="flex items-center space-x-2 text-sm text-blue-300">
           <Stethoscope className="w-4 h-4" />
           <span>Template: <strong>{clinicalQuestionnaire.template_type}</strong> - Dr. Nuqman's clinical approach</span>
         </div>
@@ -661,7 +688,7 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
         {viewMode === 'soap' && currentNote && (
           <div className="space-y-4">
             {/* Note Metadata */}
-            <div className="flex items-center justify-between text-xs text-gray-500 bg-gray-50 p-2 rounded-md">
+            <div className="flex items-center justify-between text-xs text-white/60 bg-white/5 p-2 rounded-md">
               <div className="flex items-center space-x-1">
                 <Calendar className="w-3 h-3" />
                 <span>{new Date(currentNote.date).toLocaleDateString()}</span>
@@ -669,19 +696,19 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
               <div className="flex items-center space-x-2">
                 <span className={`px-2 py-0.5 rounded-full text-xs ${
                   currentNote.generated_by === 'ai' 
-                    ? 'bg-blue-100 text-blue-700' 
-                    : 'bg-green-100 text-green-700'
+                    ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' 
+                    : 'bg-green-500/20 text-green-300 border border-green-500/30'
                 }`}>
                   {currentNote.generated_by === 'ai' ? 'AI Generated' : 'Manual'}
                 </span>
-                <span className={`px-2 py-0.5 rounded-full text-xs bg-purple-100 text-purple-700`}>
+                <span className="px-2 py-0.5 rounded-full text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30">
                   {currentNote.template_used || clinicalQuestionnaire.template_type}
                 </span>
                 <div className="flex items-center space-x-1">
                   <span>Confidence: {Math.round(currentNote.confidence_score * 100)}%</span>
-                  <div className="w-12 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="w-12 h-1.5 bg-white/20 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-clinical-blue rounded-full"
+                      className="h-full bg-gradient-to-r from-blue-400 to-green-400 rounded-full"
                       style={{ width: `${currentNote.confidence_score * 100}%` }}
                     />
                   </div>
@@ -699,19 +726,19 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
 
             {/* Actions */}
             {isEditing && (
-              <div className="flex justify-end space-x-2 pt-2 border-t border-gray-200">
+              <div className="flex justify-end space-x-2 pt-2 border-t border-white/20">
                 <button
                   onClick={() => {
                     setIsEditing(false)
                     setEditedSections(currentNote.soap_sections)
                   }}
-                  className="px-3 py-1.5 text-gray-600 hover:text-gray-800 text-sm"
+                  className="px-3 py-1.5 text-white/70 hover:text-white hover:bg-white/10 text-sm rounded-md transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
-                  className="px-3 py-1.5 bg-clinical-blue text-white rounded-md hover:bg-blue-700 text-sm"
+                  className="px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm transition-colors"
                 >
                   Save Changes
                 </button>
@@ -721,15 +748,15 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
         )}
 
         {viewMode === 'soap' && !currentNote && (
-          <div className="text-center py-8 text-gray-500">
-            <FileText className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+          <div className="text-center py-8 text-white/70">
+            <FileText className="w-12 h-12 mx-auto mb-3 text-white/50" />
             <p className="text-sm mb-2">No SOAP note generated yet</p>
-            <p className="text-xs text-gray-400 mb-4">
+            <p className="text-xs text-white/50 mb-4">
               Complete the clinical interview first, then click "Generate" to create an AI-powered SOAP note
             </p>
             <button
               onClick={() => setViewMode('questionnaire')}
-              className="px-4 py-2 bg-clinical-blue text-white rounded-md hover:bg-blue-700 text-sm transition-colors"
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm transition-colors"
             >
               Start Clinical Interview
             </button>
@@ -739,13 +766,13 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
 
       {/* Existing Notes Summary */}
       {existingNotes.length > 0 && (
-        <div className="mt-4 pt-3 border-t border-gray-200">
-          <p className="text-xs text-gray-500 mb-2">Previous Notes: {existingNotes.length}</p>
+        <div className="mt-4 pt-3 border-t border-white/10">
+          <p className="text-xs text-white/60 mb-2">Previous Notes: {existingNotes.length}</p>
           <div className="flex flex-wrap gap-1">
             {existingNotes.slice(-3).map((note, index) => (
               <span
                 key={note.id}
-                className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md"
+                className="px-2 py-1 bg-white/10 text-white/70 text-xs rounded-md"
               >
                 {new Date(note.date).toLocaleDateString()}
               </span>
@@ -754,7 +781,15 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
         </div>
       )}
 
-      <Handle type="source" position={Position.Bottom} />
+      <Handle 
+        type="source" 
+        position={Position.Bottom}
+        style={{
+          backgroundColor: '#ef4444',
+          border: '2px solid white',
+          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+        }}
+      />
     </div>
   )
 }

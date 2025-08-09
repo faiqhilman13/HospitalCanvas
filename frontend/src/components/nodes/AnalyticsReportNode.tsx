@@ -95,9 +95,9 @@ export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
 
   if (loading) {
     return (
-      <div className="canvas-node bg-white rounded-lg shadow-md border border-gray-200 min-w-[300px] min-h-[250px]">
-        <div className="p-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+      <div className="canvas-node min-w-[300px] min-h-[250px]">
+        <div className="p-4 border-b border-white/10">
+          <h3 className="text-lg font-semibold text-white">{title}</h3>
         </div>
         <div className="p-6 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -130,7 +130,7 @@ export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <h3 className="text-lg font-semibold text-white">{title}</h3>
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
             📊 {role}
           </span>

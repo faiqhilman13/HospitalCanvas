@@ -74,9 +74,9 @@ const AIQuestionBoxNode: React.FC<CanvasNodeProps> = ({ data }) => {
       
       {/* Header */}
       <div className="flex items-center space-x-2 mb-3 flex-shrink-0">
-        <Brain className="w-5 h-5 text-clinical-blue" />
-        <h3 className="font-semibold text-gray-900">Ask AI</h3>
-        <div className="text-xs text-gray-500">
+        <Brain className="w-5 h-5 text-white" />
+        <h3 className="font-semibold text-white">Ask AI</h3>
+        <div className="text-xs text-white/70">
           Clinical Document Q&A
         </div>
       </div>
@@ -84,29 +84,29 @@ const AIQuestionBoxNode: React.FC<CanvasNodeProps> = ({ data }) => {
       {/* Conversation History */}
       <div className="flex-1 overflow-auto mb-3 space-y-3 min-h-0">
         {conversations.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
-            <MessageCircle className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+          <div className="text-center text-white/70 py-8">
+            <MessageCircle className="w-8 h-8 text-white/50 mx-auto mb-2" />
             <p className="text-sm">Ask a question about this patient's clinical data</p>
           </div>
         ) : (
           conversations.map((qa) => (
             <div key={qa.id} className="space-y-2">
               {/* Question */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-sm text-blue-900 font-medium">Q: {qa.question}</p>
+              <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-3">
+                <p className="text-sm text-blue-300 font-medium">Q: {qa.question}</p>
               </div>
               
               {/* Answer */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                <p className="text-sm text-gray-800 mb-2">{qa.answer}</p>
+              <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                <p className="text-sm text-white/90 mb-2">{qa.answer}</p>
                 
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center space-x-2">
-                    <span className="text-gray-500">Confidence: {Math.round(qa.confidence * 100)}%</span>
+                    <span className="text-white/60">Confidence: {Math.round(qa.confidence * 100)}%</span>
                     {qa.source && (
                       <button
                         onClick={() => handleViewSource(qa)}
-                        className="flex items-center space-x-1 text-clinical-blue hover:text-blue-700"
+                        className="flex items-center space-x-1 text-blue-300 hover:text-blue-200"
                       >
                         <ExternalLink className="w-3 h-3" />
                         <span>View Source (Page {qa.source.page})</span>
@@ -121,21 +121,21 @@ const AIQuestionBoxNode: React.FC<CanvasNodeProps> = ({ data }) => {
       </div>
 
       {/* Question Input */}
-      <div className="flex-shrink-0 border-t border-gray-200 pt-3">
+      <div className="flex-shrink-0 border-t border-white/10 pt-3">
         <div className="flex space-x-2">
           <textarea
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Ask a question about this patient..."
-            className="flex-1 resize-none border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-clinical-blue focus:border-transparent"
+            className="flex-1 resize-none border border-white/20 rounded-lg px-3 py-2 text-sm bg-white/10 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
             rows={2}
             disabled={isLoading}
           />
           <button
             onClick={handleAsk}
             disabled={!question.trim() || isLoading || !onAsk}
-            className="px-3 py-2 bg-clinical-blue text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {isLoading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -145,7 +145,7 @@ const AIQuestionBoxNode: React.FC<CanvasNodeProps> = ({ data }) => {
           </button>
         </div>
         
-        <div className="text-xs text-gray-500 mt-1">
+        <div className="text-xs text-white/50 mt-1">
           Press Enter to send • Shift+Enter for new line
         </div>
       </div>
