@@ -96,7 +96,7 @@ const LabResultsNode: React.FC<CanvasNodeProps> = ({ data }) => {
     // Fallback - no valid data
     console.warn('LabResultsNode: No valid lab data provided', data)
     return (
-      <div className="canvas-node min-w-[350px] min-h-[250px]">
+      <div className="canvas-node">
         <Handle type="target" position={Position.Top} />
         <div className="flex items-center justify-center h-full">
           <p className="text-white/70">No lab data available</p>
@@ -110,7 +110,7 @@ const LabResultsNode: React.FC<CanvasNodeProps> = ({ data }) => {
   if (!labs || labs.length === 0) {
     console.warn('LabResultsNode: Empty labs data', labs)
     return (
-      <div className="canvas-node min-w-[350px] min-h-[250px]">
+      <div className="canvas-node">
         <Handle type="target" position={Position.Top} />
         <div className="flex items-center justify-center h-full">
           <p className="text-white/70">No lab results available</p>
@@ -158,12 +158,10 @@ const LabResultsNode: React.FC<CanvasNodeProps> = ({ data }) => {
   }
 
   return (
-    <div className="canvas-node min-w-[350px] min-h-[250px]">
+    <div className="canvas-node flex flex-col h-full w-full">
       <NodeResizer
-        minWidth={350}
+        minWidth={300}
         minHeight={250}
-        maxWidth={650}
-        maxHeight={550}
         shouldResize={() => true}
         handleStyle={{
           backgroundColor: '#f97316',

@@ -58,9 +58,9 @@ export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
         }
 
         const [metrics, patterns, medications] = [
-          metricsResult.data,
-          patternsResult.data,
-          medicationsResult.data
+          metricsResult.data as unknown as PopulationMetric[],
+          patternsResult.data as unknown as DiseasePattern[],
+          medicationsResult.data as unknown as MedicationAnalytic[]
         ]
 
         setAnalyticsData({
@@ -95,7 +95,7 @@ export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
 
   if (loading) {
     return (
-      <div className="canvas-node min-w-[300px] min-h-[250px]">
+      <div className="canvas-node">
         <div className="p-4 border-b border-white/10">
           <h3 className="text-lg font-semibold text-white">{title}</h3>
         </div>
@@ -108,12 +108,10 @@ export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
   }
 
   return (
-    <div className="canvas-node bg-white rounded-lg shadow-md border border-gray-200 min-w-[300px] min-h-[250px] flex flex-col">
+    <div className="canvas-node bg-white rounded-lg shadow-md border border-gray-200 flex flex-col h-full w-full">
       <NodeResizer 
         minWidth={300} 
         minHeight={250} 
-        maxWidth={600}
-        maxHeight={500}
         shouldResize={() => true}
         handleStyle={{
           backgroundColor: '#8b5cf6',

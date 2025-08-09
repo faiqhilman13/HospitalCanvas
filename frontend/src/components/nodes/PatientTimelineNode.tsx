@@ -1,70 +1,57 @@
 import React, { useState, useMemo } from 'react'
 import { Handle, Position, NodeResizer } from '@xyflow/react'
-import { 
-  Calendar, 
-  Clock, 
-  FileText, 
-  Activity, 
-  TestTube, 
-  Pill, 
+import {
+  Calendar,
+  Clock,
+  FileText,
+  Activity,
+  TestTube,
+  Pill,
   Stethoscope,
   ChevronDown,
   ChevronRight,
-  Filter
+  Filter,
 } from 'lucide-react'
 import type { CanvasNodeProps, PatientTimelineNodeData, TimelineEvent } from '../../types'
 
 const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
   const { events, patient, dateRange } = data as PatientTimelineNodeData
-  
-  // Add null safety check for patient data  
+
+  // Null safety: if no patient or events, render a compact empty state
   if (!patient || !events) {
     return (
-      <div className="canvas-node min-w-[450px] max-w-[600px]">
+      <div className="canvas-node flex flex-col h-full w-full">
         <NodeResizer
-          minWidth={350}
+          minWidth={300}
           minHeight={250}
-          maxWidth={650}
-          maxHeight={550}
           shouldResize={() => true}
           handleStyle={{
             backgroundColor: '#84cc16',
             width: '8px',
             height: '8px',
-            border: '2px solid white'
+            border: '2px solid white',
           }}
           lineStyle={{
             borderColor: '#84cc16',
-            borderWidth: '2px'
+            borderWidth: '2px',
           }}
         />
         <Handle type="target" position={Position.Top} />
-        
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-2">
-            <Calendar className="w-5 h-5 text-white/70" />
-            <div>
-              <h3 className="font-semibold text-white">Patient Timeline</h3>
-              <p className="text-sm text-white/70">Patient data not available</p>
-            </div>
-          </div>
-        </div>
 
-        <div className="text-center py-8 text-white/70">
-          <Calendar className="w-12 h-12 mx-auto mb-3 text-white/50" />
-          <p className="text-sm mb-2">Timeline data not available for this role</p>
-          <p className="text-xs text-white/50">
-            Patient timeline requires clinical context
-          </p>
+        <div className="text-center text-white/70">
+          <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">No timeline data available</p>
         </div>
 
         <Handle type="source" position={Position.Bottom} />
       </div>
     )
   }
-  
+
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set())
-  const [selectedEventTypes, setSelectedEventTypes] = useState<Set<string>>(new Set(['visit', 'lab', 'vital', 'document', 'procedure', 'medication']))
+  const [selectedEventTypes, setSelectedEventTypes] = useState<Set<string>>(
+    new Set(['visit', 'lab', 'vital', 'document', 'procedure', 'medication'])
+  )
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc')
 
   // Get icon for event type
@@ -164,12 +151,10 @@ const PatientTimelineNode: React.FC<CanvasNodeProps> = ({ data }) => {
   const eventTypeOptions = ['visit', 'lab', 'vital', 'document', 'procedure', 'medication']
 
   return (
-    <div className="canvas-node min-w-[450px] max-w-[600px]">
+    <div className="canvas-node flex flex-col h-full w-full">
       <NodeResizer
-        minWidth={350}
+        minWidth={300}
         minHeight={250}
-        maxWidth={650}
-        maxHeight={550}
         shouldResize={() => true}
         handleStyle={{
           backgroundColor: '#84cc16',

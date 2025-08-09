@@ -8,6 +8,10 @@ interface EnhancedDocumentViewerNodeData extends DocumentViewerNodeData {
   patientId?: string
   onDocumentUpload?: (file: File) => Promise<void>
   allowUpload?: boolean
+  // Optional backend-shaped fields for compatibility
+  documentName?: string
+  documentUrl?: string
+  pageCount?: number
 }
 
 const DocumentViewerNode: React.FC<CanvasNodeProps> = ({ data }) => {
@@ -32,7 +36,7 @@ const DocumentViewerNode: React.FC<CanvasNodeProps> = ({ data }) => {
     // Fallback - no valid document data
     console.warn('DocumentViewerNode: No valid document data provided', nodeData)
     return (
-      <div className="canvas-node min-w-[400px] min-h-[350px] animate-fade-in">
+      <div className="canvas-node animate-fade-in">
         <Handle 
           type="target" 
           position={Position.Top}
@@ -141,12 +145,10 @@ const DocumentViewerNode: React.FC<CanvasNodeProps> = ({ data }) => {
   }
 
   return (
-    <div className="canvas-node min-w-[350px] min-h-[400px] flex flex-col">
+    <div className="canvas-node flex flex-col h-full w-full">
       <NodeResizer
-        minWidth={400}
-        minHeight={300}
-        maxWidth={700}
-        maxHeight={600}
+        minWidth={300}
+        minHeight={250}
         shouldResize={() => true}
         handleStyle={{
           backgroundColor: '#ec4899',

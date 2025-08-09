@@ -38,7 +38,7 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
   // Add null safety check for patient data
   if (!patient) {
     return (
-      <div className="canvas-node min-w-[400px] max-w-[500px] animate-fade-in">
+      <div className="canvas-node animate-fade-in">
         <Handle 
           type="target" 
           position={Position.Top}
@@ -566,12 +566,10 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
   }
 
   return (
-    <div className="canvas-node min-w-[400px] max-w-[500px]">
+    <div className="canvas-node flex flex-col h-full w-full">
       <NodeResizer 
-        minWidth={350} 
-        minHeight={300} 
-        maxWidth={650}
-        maxHeight={700}
+        minWidth={300} 
+        minHeight={250}
         shouldResize={() => true}
         handleStyle={{
           backgroundColor: '#f59e0b',
@@ -654,7 +652,7 @@ const SOAPGeneratorNode: React.FC<CanvasNodeProps> = ({ data }) => {
       </div>
 
       {/* Content based on view mode */}
-      <div className="max-h-96 overflow-y-auto">
+      <div className="overflow-y-auto flex-1">
         {viewMode === 'questionnaire' && (
           <ClinicalQuestionnairePanel
             questionnaire={clinicalQuestionnaire}

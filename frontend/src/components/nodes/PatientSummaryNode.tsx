@@ -108,14 +108,12 @@ const PatientSummaryNode: React.FC<CanvasNodeProps> = ({ data }) => {
   const urgency = summary?.urgency_level || urgencyLevel || 'medium'
 
   return (
-    <div className={`canvas-node min-w-[400px] max-w-[500px] animate-fade-in hover-lift ${
+    <div className={`canvas-node flex flex-col h-full w-full animate-fade-in hover-lift ${
       urgency === 'critical' ? 'critical' : urgency === 'high' ? 'warning' : ''
     }`}>
       <NodeResizer 
         minWidth={300} 
-        minHeight={200} 
-        maxWidth={600}
-        maxHeight={800}
+        minHeight={250} 
         shouldResize={() => true}
         handleStyle={{
           backgroundColor: '#3b82f6',

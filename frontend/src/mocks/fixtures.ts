@@ -29,21 +29,21 @@ export const mockPatientData: Record<string, PatientData> = {
           id: 'summary-1',
           type: 'patientSummary',
           position: { x: 100, y: 100 },
-          size: { width: 350, height: 250 },
+          size: { width: 500, height: 400 },
           data: {}
         },
         {
           id: 'soap-1',
           type: 'SOAPGenerator',
           position: { x: 500, y: 100 },
-          size: { width: 400, height: 300 },
+          size: { width: 550, height: 450 },
           data: {}
         },
         {
           id: 'timeline-1',
           type: 'Timeline',
           position: { x: 100, y: 400 },
-          size: { width: 450, height: 350 },
+          size: { width: 550, height: 450 },
           data: {}
         }
       ],

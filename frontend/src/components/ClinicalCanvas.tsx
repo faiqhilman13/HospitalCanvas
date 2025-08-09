@@ -172,8 +172,8 @@ const convertToReactFlowNodes = (canvasNodes: CanvasNode[], patientData: Patient
     position: node.position,
     data: createNodeData(node.type, node.data, patientData),
     style: {
-      width: node.size?.width || 300,
-      height: node.size?.height || 200,
+      width: node.size?.width || 500,
+      height: node.size?.height || 600,
     },
   }))
 }

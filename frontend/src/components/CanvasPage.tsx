@@ -18,8 +18,13 @@ function CanvasPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button 
-                onClick={() => navigate('/')}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  console.log('Back button clicked, navigating to /')
+                  navigate('/')
+                }}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors cursor-pointer relative z-50 p-1 hover:bg-gray-100 rounded"
                 title="Back to Home"
               >
                 <ChevronLeft className="w-5 h-5" />

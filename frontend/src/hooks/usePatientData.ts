@@ -29,7 +29,7 @@ const mockPatientData: Record<string, PatientData> = {
           id: 'summary-1',
           type: 'patientSummary',
           position: { x: 50, y: 50 },
-          size: { width: 350, height: 200 },
+          size: { width: 500, height: 400 },
           data: {
             summary: {
               clinical_summary: 'Uncle Tan is a 65-year-old male with chronic kidney disease (CKD) stage 3b, diabetes mellitus type 2, and hypertension. Recent labs show declining renal function with eGFR of 48 mL/min/1.73m². Requires nephrology consultation and medication adjustments.',
@@ -98,7 +98,7 @@ const mockPatientData: Record<string, PatientData> = {
           id: 'vitals-1',
           type: 'vitalsChart',
           position: { x: 450, y: 50 },
-          size: { width: 400, height: 300 },
+          size: { width: 550, height: 450 },
           data: {
             title: 'Kidney Function Trend',
             vitals: [
@@ -117,7 +117,7 @@ const mockPatientData: Record<string, PatientData> = {
           id: 'document-1',
           type: 'documentViewer',
           position: { x: 50, y: 300 },
-          size: { width: 350, height: 400 },
+          size: { width: 550, height: 500 },
           data: {
             document: {
               id: 'doc-001',
@@ -132,7 +132,7 @@ const mockPatientData: Record<string, PatientData> = {
           id: 'qa-1',
           type: 'aiQuestionBox',
           position: { x: 450, y: 400 },
-          size: { width: 400, height: 300 },
+          size: { width: 550, height: 450 },
           data: {
             qa_pairs: [
               {
@@ -153,7 +153,7 @@ const mockPatientData: Record<string, PatientData> = {
           id: 'soap-generator-1',
           type: 'SOAPGenerator',
           position: { x: 50, y: 750 },
-          size: { width: 500, height: 400 },
+          size: { width: 650, height: 550 },
           data: {
             patient: {
               id: 'uncle-tan-001',
@@ -192,7 +192,7 @@ const mockPatientData: Record<string, PatientData> = {
           id: 'timeline-1',
           type: 'Timeline',
           position: { x: 600, y: 750 },
-          size: { width: 450, height: 400 },
+          size: { width: 600, height: 550 },
           data: {
             patient: {
               id: 'uncle-tan-001',

@@ -52,12 +52,10 @@ const AIQuestionBoxNode: React.FC<CanvasNodeProps> = ({ data }) => {
   }
 
   return (
-    <div className="canvas-node min-w-[400px] min-h-[300px] flex flex-col">
+    <div className="canvas-node flex flex-col h-full w-full">
       <NodeResizer
         minWidth={300}
-        minHeight={200}
-        maxWidth={600}
-        maxHeight={500}
+        minHeight={250}
         shouldResize={() => true}
         handleStyle={{
           backgroundColor: '#06b6d4',

@@ -13,7 +13,7 @@ import {
   Filler,
 } from 'chart.js'
 import { TrendingDown, TrendingUp, Activity, Heart, AlertCircle } from 'lucide-react'
-import type { CanvasNodeProps, VitalsChartNodeData } from '../../types'
+import type { CanvasNodeProps, VitalsChartNodeData, VitalSign } from '../../types'
 import HealthScoreIndicator from '../HealthScoreIndicator'
 
 ChartJS.register(
@@ -52,7 +52,7 @@ const VitalsChartNode: React.FC<CanvasNodeProps> = ({ data }) => {
     // Fallback - no valid data
     console.warn('VitalsChartNode: No valid vitals data provided', data)
     return (
-      <div className="canvas-node min-w-[400px] min-h-[300px] animate-fade-in">
+      <div className="canvas-node animate-fade-in">
         <Handle 
           type="target" 
           position={Position.Top} 
@@ -86,7 +86,7 @@ const VitalsChartNode: React.FC<CanvasNodeProps> = ({ data }) => {
   if (!vitals || vitals.length === 0 || !vitals[0] || !vitals[0].values || vitals[0].values.length === 0) {
     console.warn('VitalsChartNode: Invalid vitals data structure', vitals)
     return (
-      <div className="canvas-node min-w-[400px] min-h-[300px] animate-fade-in">
+      <div className="canvas-node animate-fade-in">
         <Handle 
           type="target" 
           position={Position.Top} 
@@ -273,14 +273,12 @@ const VitalsChartNode: React.FC<CanvasNodeProps> = ({ data }) => {
   const latestValue = vital.values[vital.values.length - 1]
 
   return (
-    <div className={`canvas-node min-w-[400px] min-h-[300px] animate-fade-in hover-lift ${
+    <div className={`canvas-node flex flex-col h-full w-full animate-fade-in hover-lift ${
       hasWarning ? 'critical' : vitalScore < 60 ? 'warning' : 'success'
     }`}>
       <NodeResizer 
-        minWidth={350} 
+        minWidth={300} 
         minHeight={250} 
-        maxWidth={700}
-        maxHeight={600}
         shouldResize={() => true}
         handleStyle={{
           backgroundColor: '#10b981',
@@ -357,7 +355,7 @@ const VitalsChartNode: React.FC<CanvasNodeProps> = ({ data }) => {
       {/* Enhanced Chart Container */}
       <div className="glass-panel p-4 mb-4 animate-scale-in">
         <div className="h-52 relative">
-          <Line data={chartData} options={chartOptions} />
+          <Line data={chartData} options={chartOptions as any} />
           
           {/* Chart Overlay Effects */}
           {hasWarning && (
