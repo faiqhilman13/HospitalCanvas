@@ -6,10 +6,8 @@ import {
   Activity, 
   Eye, 
   Stethoscope, 
-  UserCheck, 
   Zap, 
   Microscope, 
-  Star, 
   Shield, 
   Clock, 
   CalendarCheck,
@@ -75,38 +73,12 @@ const HeroPage = () => {
             </p>
           </div>
 
-          {/* Stats & Trust Indicators */}
-          <div className={`flex flex-col gap-6 lg:items-end transition-all duration-1000 delay-200 ${animationsStarted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
-            <div className="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
-              <div className="flex space-x-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-blue-400 text-blue-400" />
-                ))}
-              </div>
-              <div className="text-left">
-                <div className="font-semibold text-gray-900">4.9 Clinical Rating</div>
-                <div className="text-sm text-gray-500">Healthcare professionals</div>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-medium text-gray-600">Trusted by clinicians</span>
-              <div className="flex -space-x-3">
-                <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=120&h=120&fit=crop&crop=face" alt="Doctor" className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" />
-                <img src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=120&h=120&fit=crop&crop=face" alt="Doctor" className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" />
-                <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=120&h=120&fit=crop&crop=face" alt="Doctor" className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" />
-                <div className="w-10 h-10 bg-blue-100 rounded-full border-2 border-white shadow-sm flex items-center justify-center">
-                  <span className="text-xs font-semibold text-blue-700">500+</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Bento Grid Layout */}
-        <section className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 h-[800px] lg:h-[600px]">
+        <section className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 h-[800px] lg:h-[600px]">
           {/* Main Canvas Demo Card */}
-          <div className={`col-span-2 md:col-span-2 lg:col-span-3 row-span-1 transition-all duration-1000 delay-400 ${animationsStarted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+          <div className={`col-span-2 md:col-span-2 lg:col-span-2 row-span-1 transition-all duration-1000 delay-400 ${animationsStarted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
             <div className="relative rounded-3xl overflow-hidden shadow-2xl group h-full cursor-pointer" onClick={handleEnterCanvas}>
               <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=1080&q=80" alt="Clinical dashboard" className="w-full h-full transition-transform duration-700 group-hover:scale-105 object-cover" />
               
@@ -199,31 +171,6 @@ const HeroPage = () => {
             </div>
           </div>
 
-          {/* User Testimonial */}
-          <div className={`col-span-1 md:col-span-1 lg:col-span-1 row-span-1 transition-all duration-1000 delay-800 ${animationsStarted ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
-            <div className="h-full rounded-3xl bg-white p-6 flex flex-col justify-between shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 group">
-              <div>
-                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <UserCheck className="w-5 h-5 text-green-600" />
-                </div>
-                <div className="flex space-x-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-green-400 text-green-400" />
-                  ))}
-                </div>
-                <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                  "Revolutionary tool that saves hours of documentation time."
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&q=80" alt="Dr. Sarah" className="w-8 h-8 object-cover rounded-full" />
-                <div>
-                  <div className="font-medium text-sm">Dr. Sarah Chen</div>
-                  <div className="text-xs text-gray-500">Internal Medicine</div>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* Quick Access Features */}
           <div className={`col-span-1 md:col-span-1 lg:col-span-2 row-span-1 transition-all duration-1000 delay-1000 ${animationsStarted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
@@ -264,16 +211,6 @@ const HeroPage = () => {
                 <p className="text-sm text-gray-600 leading-relaxed mb-4">
                   Powered by transformer models and vector embeddings for precise clinical understanding.
                 </p>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Document accuracy</span>
-                    <span className="font-semibold text-indigo-600">98.5%</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Search relevance</span>
-                    <span className="font-semibold text-indigo-600">96.2%</span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
