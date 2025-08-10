@@ -454,4 +454,109 @@ const PriorityBadge = ({ priority }: { priority: 'high' | 'medium' | 'low' }) =>
 - Status Colors: Red, Orange, Yellow, Green, Blue
 - Text Opacity: 50%, 60%, 70%, 80%, 90%, 100%
 
+---
+
+## 📐 Canvas Node Sizing & Layout
+
+### Default Node Sizing Configuration
+
+**Primary Size Configuration Location:**
+```typescript
+// File: frontend/src/components/ClinicalCanvas.tsx
+// Lines: ~175-177 in convertToReactFlowNodes function
+
+style: {
+  width: node.size?.width || 500,   // Default width fallback
+  height: node.size?.height || 600, // Default height fallback
+}
+```
+
+**Why This Matters:**
+- Database canvas layouts don't store size properties
+- Mock data sizes are only used when API fails completely
+- The fallback values in `ClinicalCanvas.tsx` determine actual initial node sizes
+
+### Node Resizing Capabilities
+
+**Enable Unlimited Resizing:**
+```typescript
+// In each node component (e.g., PatientSummaryNode.tsx):
+
+// ✅ CORRECT - Unlimited resizing
+<div className="canvas-node flex flex-col h-full w-full">
+  <NodeResizer 
+    minWidth={300}   // Minimum width constraint
+    minHeight={250}  // Minimum height constraint
+    // NO maxWidth or maxHeight = unlimited resizing
+    shouldResize={() => true}
+  />
+</div>
+
+// ❌ INCORRECT - Limited resizing  
+<div className="canvas-node min-w-[400px] min-h-[300px]">
+  <NodeResizer 
+    minWidth={300}
+    minHeight={250}
+    maxWidth={600}    // This limits horizontal resizing
+    maxHeight={500}   // This limits vertical resizing
+  />
+</div>
+```
+
+### Node Sizing Troubleshooting
+
+**Common Issues & Solutions:**
+
+1. **Default sizes too small on load:**
+   - **Location:** `frontend/src/components/ClinicalCanvas.tsx:175-177`
+   - **Fix:** Update fallback width/height values
+
+2. **Resizing constraints (max limits):**
+   - **Location:** Each node component's `NodeResizer` props
+   - **Fix:** Remove `maxWidth` and `maxHeight` properties
+
+3. **Fixed container sizes preventing flex:**
+   - **Location:** Node component root div
+   - **Fix:** Use `flex flex-col h-full w-full` instead of `min-w-[Xpx] min-h-[Xpx]`
+
+### Configuration Files Reference
+
+**Files that control node sizing:**
+
+1. **ClinicalCanvas.tsx** (Primary - controls actual sizing)
+   ```typescript
+   // Line ~176: Default fallback sizes when no size data exists
+   height: node.size?.height || 600  // ← Change this for default height
+   ```
+
+2. **usePatientData.ts** (Mock data - only used when API fails)
+   ```typescript
+   // Lines ~32, 101, 120, 135, 156, 195: Mock canvas layout sizes
+   size: { width: 500, height: 400 }  // Only used as API fallback
+   ```
+
+3. **fixtures.ts** (Test data - only used in tests)
+   ```typescript
+   // Lines ~32, 39, 46: Test canvas layout sizes
+   size: { width: 500, height: 400 }  // Only used in testing
+   ```
+
+4. **Database (Primary data source)**
+   ```sql
+   -- canvas_layouts table stores JSON without size properties
+   -- Backend populate_demo_data.py creates layouts without size
+   -- This is why ClinicalCanvas.tsx fallbacks are used
+   ```
+
+### Quick Size Changes
+
+**To change default node sizes:**
+1. Edit `frontend/src/components/ClinicalCanvas.tsx` line ~176
+2. Update the fallback values: `|| 500` (width), `|| 600` (height)
+3. Restart frontend to see changes
+
+**To modify minimum resize constraints:**
+1. Edit individual node files (e.g., `PatientSummaryNode.tsx`)
+2. Update `NodeResizer` props: `minWidth={300}`, `minHeight={250}`
+
 This style guide ensures consistent, accessible, and maintainable UI components across the entire HospitalCanvas platform! 🎨✨

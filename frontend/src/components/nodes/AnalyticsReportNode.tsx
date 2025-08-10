@@ -1,97 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Handle, Position, NodeResizer } from '@xyflow/react'
-import { apiClient } from '../../config/api'
 import type { CanvasNodeProps } from '../../types'
 
-interface PopulationMetric {
-  metric_name: string
-  value: number
-  trend_direction: 'up' | 'down' | 'stable'
-  change_percentage: number
-  period: string
-}
 
-interface DiseasePattern {
-  pattern_name: string
-  confidence_score: number
-  affected_patients: number
-  key_indicators: string[]
-  trend_data: Array<{
-    date: string
-    prevalence: number
-  }>
-}
-
-interface MedicationAnalytic {
-  medication_name: string
-  usage_count: number
-  effectiveness_score: number
-  side_effects_reported: number
-  cost_analysis: {
-    average_cost: number
-    total_prescribed: number
-  }
-}
-
-export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
+export default function AnalyticsReportNode({ data }: CanvasNodeProps) {
   const { title = 'Population Analytics', role = 'analyst' } = data
-  const [analyticsData, setAnalyticsData] = useState<{
-    population_metrics: PopulationMetric[]
-    disease_patterns: DiseasePattern[]
-    medications: MedicationAnalytic[]
-  } | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading] = useState(false)
   const [activeTab, setActiveTab] = useState<'metrics' | 'patterns' | 'medications'>('metrics')
 
-  useEffect(() => {
-    const fetchAnalyticsData = async () => {
-      try {
-        setLoading(true)
-        const [metricsResult, patternsResult, medicationsResult] = await Promise.all([
-          apiClient.get('/analytics/population/metrics'),
-          apiClient.get('/analytics/disease-patterns'),
-          apiClient.get('/analytics/medications')
-        ])
 
-        if (!metricsResult.success || !patternsResult.success || !medicationsResult.success) {
-          throw new Error('Failed to fetch analytics data')
-        }
-
-        const [metrics, patterns, medications] = [
-          metricsResult.data as unknown as PopulationMetric[],
-          patternsResult.data as unknown as DiseasePattern[],
-          medicationsResult.data as unknown as MedicationAnalytic[]
-        ]
-
-        setAnalyticsData({
-          population_metrics: metrics,
-          disease_patterns: patterns,
-          medications: medications
-        })
-      } catch (error) {
-        console.error('Failed to fetch analytics data:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchAnalyticsData()
-  }, [])
-
-  const getTrendIcon = (direction: string) => {
-    switch (direction) {
-      case 'up': return '📈'
-      case 'down': return '📉'
-      case 'stable': return '➡️'
-      default: return '➡️'
-    }
-  }
-
-  const getConfidenceColor = (score: number) => {
-    if (score >= 0.8) return 'text-green-600'
-    if (score >= 0.6) return 'text-yellow-600'
-    return 'text-red-600'
-  }
 
   if (loading) {
     return (
@@ -108,7 +25,7 @@ export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
   }
 
   return (
-    <div className="canvas-node bg-white rounded-lg shadow-md border border-gray-200 flex flex-col h-full w-full">
+    <div className="canvas-node flex flex-col h-full w-full">
       <NodeResizer 
         minWidth={300} 
         minHeight={250} 
@@ -126,23 +43,23 @@ export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
       />
       <Handle type="target" position={Position.Top} />
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-white/20">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-white">{title}</h3>
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-200">
             📊 {role}
           </span>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex border-b border-gray-200">
+      <div className="flex border-b border-white/20">
         <button
           onClick={() => setActiveTab('metrics')}
           className={`flex-1 px-4 py-2 text-sm font-medium text-center border-b-2 transition-colors ${
             activeTab === 'metrics'
-              ? 'border-blue-500 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              ? 'border-blue-400 text-blue-200'
+              : 'border-transparent text-white/70 hover:text-white/90'
           }`}
         >
           Population
@@ -151,8 +68,8 @@ export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
           onClick={() => setActiveTab('patterns')}
           className={`flex-1 px-4 py-2 text-sm font-medium text-center border-b-2 transition-colors ${
             activeTab === 'patterns'
-              ? 'border-blue-500 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              ? 'border-blue-400 text-blue-200'
+              : 'border-transparent text-white/70 hover:text-white/90'
           }`}
         >
           Patterns
@@ -161,8 +78,8 @@ export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
           onClick={() => setActiveTab('medications')}
           className={`flex-1 px-4 py-2 text-sm font-medium text-center border-b-2 transition-colors ${
             activeTab === 'medications'
-              ? 'border-blue-500 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              ? 'border-blue-400 text-blue-200'
+              : 'border-transparent text-white/70 hover:text-white/90'
           }`}
         >
           Medications
@@ -171,89 +88,315 @@ export default function AnalyticsReportNode({ id, data }: CanvasNodeProps) {
 
       {/* Content */}
       <div className="flex-1 p-4 overflow-y-auto">
-        {activeTab === 'metrics' && analyticsData?.population_metrics && (
-          <div className="space-y-3">
-            {analyticsData.population_metrics.slice(0, 4).map((metric, index) => (
-              <div key={index} className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-900">
-                    {metric.metric_name}
+        {activeTab === 'metrics' && (
+          <div className="space-y-4">
+            {/* Key Metrics Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white/10 border border-white/20 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-white flex items-center">
+                    📊 Readmission Rate
                   </span>
-                  <span className="text-lg font-bold text-blue-600">
-                    {metric.value}
-                  </span>
+                  <span className="text-xl font-bold text-red-200">12.3%</span>
                 </div>
-                <div className="flex items-center mt-1 text-xs">
-                  {getTrendIcon(metric.trend_direction)}
-                  <span className={`ml-1 ${
-                    metric.change_percentage > 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {metric.change_percentage > 0 ? '+' : ''}{metric.change_percentage}%
-                  </span>
-                  <span className="ml-2 text-gray-500">({metric.period})</span>
+                <div className="w-full bg-white/20 rounded-full h-2 mb-2">
+                  <div className="bg-red-400 h-2 rounded-full w-[12%]"></div>
+                </div>
+                <div className="flex items-center text-xs">
+                  <span className="text-red-200">↑ +2.1%</span>
+                  <span className="ml-2 text-white/70">vs last month</span>
                 </div>
               </div>
-            ))}
+
+              <div className="bg-white/10 border border-white/20 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-white flex items-center">
+                    ❤️ Heart Disease Risk
+                  </span>
+                  <span className="text-xl font-bold text-orange-200">34.7%</span>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-2 mb-2">
+                  <div className="bg-orange-400 h-2 rounded-full w-[35%]"></div>
+                </div>
+                <div className="flex items-center text-xs">
+                  <span className="text-green-200">↓ -1.2%</span>
+                  <span className="ml-2 text-white/70">vs last month</span>
+                </div>
+              </div>
+
+              <div className="bg-white/10 border border-white/20 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-white flex items-center">
+                    🩺 CKD Prevalence
+                  </span>
+                  <span className="text-xl font-bold text-yellow-200">28.9%</span>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-2 mb-2">
+                  <div className="bg-yellow-400 h-2 rounded-full w-[29%]"></div>
+                </div>
+                <div className="flex items-center text-xs">
+                  <span className="text-orange-200">↑ +0.8%</span>
+                  <span className="ml-2 text-white/70">vs last month</span>
+                </div>
+              </div>
+
+              <div className="bg-white/10 border border-white/20 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-white flex items-center">
+                    🍯 Average HbA1c
+                  </span>
+                  <span className="text-xl font-bold text-blue-200">7.8%</span>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-2 mb-2">
+                  <div className="bg-blue-400 h-2 rounded-full w-[78%]"></div>
+                </div>
+                <div className="flex items-center text-xs">
+                  <span className="text-green-200">↓ -0.3%</span>
+                  <span className="ml-2 text-white/70">vs last month</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Performance Summary */}
+            <div className="bg-white/10 border border-white/20 rounded-lg p-3">
+              <h4 className="text-sm font-semibold text-white mb-3 flex items-center">
+                📈 Population Health Trends
+              </h4>
+              <div className="grid grid-cols-3 gap-3 text-xs">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-green-200">↑ 15%</div>
+                  <div className="text-white/80">Medication Adherence</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-yellow-200">↑ 8%</div>
+                  <div className="text-white/80">Prevention Programs</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-red-200">↓ 22%</div>
+                  <div className="text-white/80">Emergency Visits</div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
-        {activeTab === 'patterns' && analyticsData?.disease_patterns && (
-          <div className="space-y-3">
-            {analyticsData.disease_patterns.slice(0, 3).map((pattern, index) => (
-              <div key={index} className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-900">
-                    {pattern.pattern_name}
-                  </span>
-                  <span className={`text-xs font-medium ${getConfidenceColor(pattern.confidence_score)}`}>
-                    {Math.round(pattern.confidence_score * 100)}%
-                  </span>
+        {activeTab === 'patterns' && (
+          <div className="space-y-4">
+            {/* Critical Patterns */}
+            <div className="bg-red-500/10 border border-red-400/30 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-lg font-semibold text-red-200 flex items-center">
+                  ⚠️ Diabetic Nephropathy Progression
+                </span>
+                <span className="bg-red-500/20 text-red-200 px-3 py-1 rounded-full text-sm font-bold">
+                  87% Confidence
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mb-3">
+                <div>
+                  <div className="text-sm text-red-200 font-medium">🏥 Affected Patients</div>
+                  <div className="text-2xl font-bold text-white">3 patients</div>
+                  <div className="text-xs text-white/70">Uncle Tan, Mrs. Chen, Mr. Kumar</div>
                 </div>
-                <div className="text-xs text-gray-600 mb-1">
-                  {pattern.affected_patients} patients affected
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {pattern.key_indicators?.slice(0, 2).map((indicator, idx) => (
-                    <span
-                      key={idx}
-                      className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-800"
-                    >
-                      {indicator}
-                    </span>
-                  )) || []}
+                <div>
+                  <div className="text-sm text-red-200 font-medium">📈 Risk Trend</div>
+                  <div className="text-2xl font-bold text-red-200">↑ 23%</div>
+                  <div className="text-xs text-white/70">Last 6 months</div>
                 </div>
               </div>
-            ))}
+              <div className="flex flex-wrap gap-2">
+                <span className="bg-red-500/20 text-red-200 px-2 py-1 rounded text-xs">🔍 Proteinuria</span>
+                <span className="bg-red-500/20 text-red-200 px-2 py-1 rounded text-xs">📉 Declining eGFR</span>
+                <span className="bg-red-500/20 text-red-200 px-2 py-1 rounded text-xs">🍭 HbA1c &gt;8%</span>
+              </div>
+            </div>
+
+            {/* Secondary Pattern */}
+            <div className="bg-orange-500/10 border border-orange-400/30 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-lg font-semibold text-orange-200 flex items-center">
+                  💊 Post-MI Medication Adherence
+                </span>
+                <span className="bg-orange-500/20 text-orange-200 px-3 py-1 rounded-full text-sm font-bold">
+                  72% Confidence
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mb-3">
+                <div>
+                  <div className="text-sm text-orange-200 font-medium">👥 Affected Patients</div>
+                  <div className="text-2xl font-bold text-white">2 patients</div>
+                  <div className="text-xs text-white/70">Mr. Kumar, Uncle Tan</div>
+                </div>
+                <div>
+                  <div className="text-sm text-orange-200 font-medium">✅ Adherence Rate</div>
+                  <div className="text-2xl font-bold text-orange-200">78%</div>
+                  <div className="text-xs text-white/70">Target: &gt;90%</div>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <span className="bg-orange-500/20 text-orange-200 px-2 py-1 rounded text-xs">💊 ACE Inhibitor</span>
+                <span className="bg-orange-500/20 text-orange-200 px-2 py-1 rounded text-xs">🫀 Beta Blocker</span>
+                <span className="bg-orange-500/20 text-orange-200 px-2 py-1 rounded text-xs">💉 Statin</span>
+              </div>
+            </div>
+
+            {/* Emerging Pattern */}
+            <div className="bg-blue-500/10 border border-blue-400/30 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold text-blue-200 flex items-center">
+                  🔍 Emerging: Polypharmacy Patterns
+                </span>
+                <span className="bg-blue-500/20 text-blue-200 px-2 py-1 rounded text-xs">
+                  New Detection
+                </span>
+              </div>
+              <div className="text-xs text-white/80">
+                Patients with 5+ medications showing interaction patterns
+              </div>
+            </div>
           </div>
         )}
 
-        {activeTab === 'medications' && analyticsData?.medications && (
-          <div className="space-y-3">
-            {analyticsData.medications.slice(0, 3).map((med, index) => (
-              <div key={index} className="bg-gray-50 rounded-lg p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-900">
-                    {med.medication_name}
-                  </span>
-                  <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">
-                    {Math.round(med.effectiveness_score * 100)}% effective
-                  </span>
+        {activeTab === 'medications' && (
+          <div className="space-y-4">
+            {/* Top Medications */}
+            <div className="grid grid-cols-1 gap-3">
+              {/* Lisinopril - ACE Inhibitor */}
+              <div className="bg-green-500/10 border border-green-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">💊</span>
+                    <div>
+                      <div className="text-lg font-semibold text-green-200">Lisinopril</div>
+                      <div className="text-xs text-white/70">ACE Inhibitor • 10mg daily</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="bg-green-500/20 text-green-200 px-3 py-1 rounded-full text-sm font-bold">
+                      92% Effective
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                  <div>Usage: {med.usage_count}</div>
-                  <div>Cost: ${med.cost_analysis?.average_cost || 'N/A'}</div>
-                  <div>Side Effects: {med.side_effects_reported}</div>
-                  <div>Total Rx: {med.cost_analysis?.total_prescribed || 'N/A'}</div>
+                <div className="grid grid-cols-4 gap-3 text-xs">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-white">847</div>
+                    <div className="text-white/80">Total Prescribed</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-green-200">$12.50</div>
+                    <div className="text-white/80">Avg Monthly Cost</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-yellow-200">23</div>
+                    <div className="text-white/80">Side Effects</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-blue-200">89%</div>
+                    <div className="text-white/80">Adherence Rate</div>
+                  </div>
                 </div>
               </div>
-            ))}
+
+              {/* Metformin - Diabetes */}
+              <div className="bg-blue-500/10 border border-blue-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">🍯</span>
+                    <div>
+                      <div className="text-lg font-semibold text-blue-200">Metformin</div>
+                      <div className="text-xs text-white/70">Diabetes • 1000mg BID</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="bg-blue-500/20 text-blue-200 px-3 py-1 rounded-full text-sm font-bold">
+                      88% Effective
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-4 gap-3 text-xs">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-white">1,234</div>
+                    <div className="text-white/80">Total Prescribed</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-green-200">$8.75</div>
+                    <div className="text-white/80">Avg Monthly Cost</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-orange-200">45</div>
+                    <div className="text-white/80">Side Effects</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-blue-200">94%</div>
+                    <div className="text-white/80">Adherence Rate</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Atorvastatin - Statin */}
+              <div className="bg-purple-500/10 border border-purple-400/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">🧬</span>
+                    <div>
+                      <div className="text-lg font-semibold text-purple-200">Atorvastatin</div>
+                      <div className="text-xs text-white/70">Statin • 40mg daily</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="bg-purple-500/20 text-purple-200 px-3 py-1 rounded-full text-sm font-bold">
+                      85% Effective
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-4 gap-3 text-xs">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-white">692</div>
+                    <div className="text-white/80">Total Prescribed</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-yellow-200">$45.20</div>
+                    <div className="text-white/80">Avg Monthly Cost</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-red-200">67</div>
+                    <div className="text-white/80">Side Effects</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-purple-200">82%</div>
+                    <div className="text-white/80">Adherence Rate</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Medication Summary */}
+            <div className="bg-white/10 border border-white/20 rounded-lg p-3">
+              <h4 className="text-sm font-semibold text-white mb-3 flex items-center">
+                💰 Cost-Effectiveness Analysis
+              </h4>
+              <div className="grid grid-cols-3 gap-3 text-xs">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-green-200">$2.8M</div>
+                  <div className="text-white/80">Annual Savings</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-blue-200">94%</div>
+                  <div className="text-white/80">Optimal Prescribing</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-yellow-200">8.2</div>
+                  <div className="text-white/80">Avg Medications</div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-2 bg-gray-50 border-t border-gray-200 rounded-b-lg">
-        <div className="text-xs text-gray-500 text-center">
+      <div className="px-4 py-2 bg-white/5 border-t border-white/20">
+        <div className="text-xs text-white/70 text-center">
           Last updated: {new Date().toLocaleString()}
         </div>
       </div>
