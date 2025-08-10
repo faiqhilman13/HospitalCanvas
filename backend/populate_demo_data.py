@@ -37,14 +37,50 @@ def populate_uncle_tan():
         VALUES (?, ?, ?, ?, ?, ?)
     """, (summary_id, patient_id, "clinical", summary_text, 0.92, datetime.now()))
     
-    # Clinical data - Vitals
+    # Clinical data - Vitals (expanded with 6-month trend)
     vitals_data = [
+        # July 2024 (Current - CKD progression)
         ("blood_pressure_systolic", "142", "mmHg", "90-140", "2024-07-28"),
         ("blood_pressure_diastolic", "88", "mmHg", "60-90", "2024-07-28"),
         ("heart_rate", "78", "bpm", "60-100", "2024-07-28"),
         ("temperature", "36.8", "°C", "36.1-37.2", "2024-07-28"),
         ("weight", "72.5", "kg", "N/A", "2024-07-28"),
-        ("oxygen_saturation", "98", "%", "95-100", "2024-07-28")
+        ("oxygen_saturation", "98", "%", "95-100", "2024-07-28"),
+        
+        # June 2024 (Mild deterioration)
+        ("blood_pressure_systolic", "138", "mmHg", "90-140", "2024-06-15"),
+        ("blood_pressure_diastolic", "85", "mmHg", "60-90", "2024-06-15"),
+        ("heart_rate", "76", "bpm", "60-100", "2024-06-15"),
+        ("weight", "71.8", "kg", "N/A", "2024-06-15"),
+        ("oxygen_saturation", "98", "%", "95-100", "2024-06-15"),
+        
+        # May 2024 (Stable period)
+        ("blood_pressure_systolic", "135", "mmHg", "90-140", "2024-05-20"),
+        ("blood_pressure_diastolic", "82", "mmHg", "60-90", "2024-05-20"),
+        ("heart_rate", "74", "bpm", "60-100", "2024-05-20"),
+        ("weight", "71.2", "kg", "N/A", "2024-05-20"),
+        ("oxygen_saturation", "99", "%", "95-100", "2024-05-20"),
+        
+        # April 2024 (Better control)
+        ("blood_pressure_systolic", "132", "mmHg", "90-140", "2024-04-10"),
+        ("blood_pressure_diastolic", "80", "mmHg", "60-90", "2024-04-10"),
+        ("heart_rate", "72", "bpm", "60-100", "2024-04-10"),
+        ("weight", "70.9", "kg", "N/A", "2024-04-10"),
+        ("oxygen_saturation", "99", "%", "95-100", "2024-04-10"),
+        
+        # March 2024 (Baseline)
+        ("blood_pressure_systolic", "128", "mmHg", "90-140", "2024-03-05"),
+        ("blood_pressure_diastolic", "78", "mmHg", "60-90", "2024-03-05"),
+        ("heart_rate", "70", "bpm", "60-100", "2024-03-05"),
+        ("weight", "70.5", "kg", "N/A", "2024-03-05"),
+        ("oxygen_saturation", "99", "%", "95-100", "2024-03-05"),
+        
+        # February 2024 (Earlier baseline)
+        ("blood_pressure_systolic", "125", "mmHg", "90-140", "2024-02-12"),
+        ("blood_pressure_diastolic", "75", "mmHg", "60-90", "2024-02-12"),
+        ("heart_rate", "68", "bpm", "60-100", "2024-02-12"),
+        ("weight", "70.1", "kg", "N/A", "2024-02-12"),
+        ("oxygen_saturation", "100", "%", "95-100", "2024-02-12")
     ]
     
     for name, value, unit, ref_range, record_date in vitals_data:
@@ -54,8 +90,9 @@ def populate_uncle_tan():
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (vital_id, patient_id, "vital", name, value, unit, ref_range, record_date, datetime.now()))
     
-    # Clinical data - Lab Results
+    # Clinical data - Lab Results (6-month progression showing CKD decline)
     lab_data = [
+        # July 2024 (Current - Stage 4 CKD)
         ("creatinine", "4.2", "mg/dL", "0.7-1.3", "2024-07-28"),
         ("bun", "68", "mg/dL", "6-24", "2024-07-28"),
         ("egfr", "18", "mL/min/1.73m²", ">60", "2024-07-28"),
@@ -63,7 +100,58 @@ def populate_uncle_tan():
         ("phosphorus", "5.2", "mg/dL", "2.5-4.5", "2024-07-28"),
         ("hemoglobin", "10.2", "g/dL", "12.0-15.5", "2024-07-28"),
         ("parathyroid_hormone", "185", "pg/mL", "15-65", "2024-07-25"),
-        ("albumin", "3.2", "g/dL", "3.5-5.0", "2024-07-28")
+        ("albumin", "3.2", "g/dL", "3.5-5.0", "2024-07-28"),
+        ("calcium", "8.9", "mg/dL", "8.5-10.5", "2024-07-28"),
+        ("hba1c", "7.8", "%", "<7.0", "2024-07-15"),
+        
+        # June 2024 (Progressive decline)
+        ("creatinine", "3.8", "mg/dL", "0.7-1.3", "2024-06-15"),
+        ("bun", "62", "mg/dL", "6-24", "2024-06-15"),
+        ("egfr", "22", "mL/min/1.73m²", ">60", "2024-06-15"),
+        ("potassium", "4.6", "mEq/L", "3.5-5.1", "2024-06-15"),
+        ("phosphorus", "4.9", "mg/dL", "2.5-4.5", "2024-06-15"),
+        ("hemoglobin", "10.8", "g/dL", "12.0-15.5", "2024-06-15"),
+        ("albumin", "3.4", "g/dL", "3.5-5.0", "2024-06-15"),
+        
+        # May 2024 (Moderate decline)
+        ("creatinine", "3.4", "mg/dL", "0.7-1.3", "2024-05-20"),
+        ("bun", "56", "mg/dL", "6-24", "2024-05-20"),
+        ("egfr", "26", "mL/min/1.73m²", ">60", "2024-05-20"),
+        ("potassium", "4.4", "mEq/L", "3.5-5.1", "2024-05-20"),
+        ("phosphorus", "4.6", "mg/dL", "2.5-4.5", "2024-05-20"),
+        ("hemoglobin", "11.2", "g/dL", "12.0-15.5", "2024-05-20"),
+        ("parathyroid_hormone", "165", "pg/mL", "15-65", "2024-05-18"),
+        ("albumin", "3.5", "g/dL", "3.5-5.0", "2024-05-20"),
+        
+        # April 2024 (Early Stage 4)
+        ("creatinine", "3.0", "mg/dL", "0.7-1.3", "2024-04-10"),
+        ("bun", "48", "mg/dL", "6-24", "2024-04-10"),
+        ("egfr", "31", "mL/min/1.73m²", ">60", "2024-04-10"),
+        ("potassium", "4.2", "mEq/L", "3.5-5.1", "2024-04-10"),
+        ("phosphorus", "4.2", "mg/dL", "2.5-4.5", "2024-04-10"),
+        ("hemoglobin", "11.8", "g/dL", "12.0-15.5", "2024-04-10"),
+        ("albumin", "3.6", "g/dL", "3.5-5.0", "2024-04-10"),
+        ("hba1c", "7.5", "%", "<7.0", "2024-04-05"),
+        
+        # March 2024 (Stage 3B)
+        ("creatinine", "2.6", "mg/dL", "0.7-1.3", "2024-03-05"),
+        ("bun", "42", "mg/dL", "6-24", "2024-03-05"),
+        ("egfr", "36", "mL/min/1.73m²", ">60", "2024-03-05"),
+        ("potassium", "4.0", "mEq/L", "3.5-5.1", "2024-03-05"),
+        ("phosphorus", "3.9", "mg/dL", "2.5-4.5", "2024-03-05"),
+        ("hemoglobin", "12.1", "g/dL", "12.0-15.5", "2024-03-05"),
+        ("albumin", "3.7", "g/dL", "3.5-5.0", "2024-03-05"),
+        
+        # February 2024 (Better kidney function)
+        ("creatinine", "2.2", "mg/dL", "0.7-1.3", "2024-02-12"),
+        ("bun", "36", "mg/dL", "6-24", "2024-02-12"),
+        ("egfr", "42", "mL/min/1.73m²", ">60", "2024-02-12"),
+        ("potassium", "3.9", "mEq/L", "3.5-5.1", "2024-02-12"),
+        ("phosphorus", "3.6", "mg/dL", "2.5-4.5", "2024-02-12"),
+        ("hemoglobin", "12.5", "g/dL", "12.0-15.5", "2024-02-12"),
+        ("parathyroid_hormone", "145", "pg/mL", "15-65", "2024-02-10"),
+        ("albumin", "3.8", "g/dL", "3.5-5.0", "2024-02-12"),
+        ("hba1c", "7.2", "%", "<7.0", "2024-02-08")
     ]
     
     for name, value, unit, ref_range, record_date in lab_data:

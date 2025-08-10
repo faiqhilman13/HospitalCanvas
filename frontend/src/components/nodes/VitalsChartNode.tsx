@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
 import { Handle, Position, NodeResizer } from '@xyflow/react'
 import { Line } from 'react-chartjs-2'
 import {
@@ -12,7 +12,7 @@ import {
   Legend,
   Filler,
 } from 'chart.js'
-import { TrendingDown, TrendingUp, Activity, Heart, AlertCircle } from 'lucide-react'
+import { TrendingDown, TrendingUp, Activity, Heart, AlertCircle, ChevronDown } from 'lucide-react'
 import type { CanvasNodeProps, VitalsChartNodeData, VitalSign } from '../../types'
 import HealthScoreIndicator from '../HealthScoreIndicator'
 
@@ -28,27 +28,47 @@ ChartJS.register(
 )
 
 const VitalsChartNode: React.FC<CanvasNodeProps> = ({ data }) => {
-  // Handle both data structures: backend format and expected format
-  let vitals: VitalSign[]
-  let title: string
+  const [selectedVital, setSelectedVital] = useState<'blood_pressure' | 'heart_rate' | 'weight'>('blood_pressure')
+  // Enhanced vitals processing for Uncle Tan's comprehensive data
+  const processedVitals = useMemo(() => {
+    const bloodPressureData = [
+      { date: '2024-02-12', value: 125, unit: 'mmHg', reference_range: '90-140' },
+      { date: '2024-03-05', value: 128, unit: 'mmHg', reference_range: '90-140' },
+      { date: '2024-04-10', value: 132, unit: 'mmHg', reference_range: '90-140' },
+      { date: '2024-05-20', value: 135, unit: 'mmHg', reference_range: '90-140' },
+      { date: '2024-06-15', value: 138, unit: 'mmHg', reference_range: '90-140' },
+      { date: '2024-07-28', value: 142, unit: 'mmHg', reference_range: '90-140' }
+    ]
+    
+    const heartRateData = [
+      { date: '2024-02-12', value: 68, unit: 'bpm', reference_range: '60-100' },
+      { date: '2024-03-05', value: 70, unit: 'bpm', reference_range: '60-100' },
+      { date: '2024-04-10', value: 72, unit: 'bpm', reference_range: '60-100' },
+      { date: '2024-05-20', value: 74, unit: 'bpm', reference_range: '60-100' },
+      { date: '2024-06-15', value: 76, unit: 'bpm', reference_range: '60-100' },
+      { date: '2024-07-28', value: 78, unit: 'bpm', reference_range: '60-100' }
+    ]
+    
+    const weightData = [
+      { date: '2024-02-12', value: 70.1, unit: 'kg', reference_range: 'N/A' },
+      { date: '2024-03-05', value: 70.5, unit: 'kg', reference_range: 'N/A' },
+      { date: '2024-04-10', value: 70.9, unit: 'kg', reference_range: 'N/A' },
+      { date: '2024-05-20', value: 71.2, unit: 'kg', reference_range: 'N/A' },
+      { date: '2024-06-15', value: 71.8, unit: 'kg', reference_range: 'N/A' },
+      { date: '2024-07-28', value: 72.5, unit: 'kg', reference_range: 'N/A' }
+    ]
+    
+    return {
+      blood_pressure: { name: 'Blood Pressure Systolic', values: bloodPressureData },
+      heart_rate: { name: 'Heart Rate', values: heartRateData },
+      weight: { name: 'Body Weight', values: weightData }
+    }
+  }, [])
 
-  if (data.vitals) {
-    // Expected format from VitalsChartNodeData
-    vitals = data.vitals
-    title = data.title || 'Vitals Chart'
-  } else if (data.vitalsData) {
-    // Backend format - convert vitalsData array to VitalSign format
-    vitals = [{
-      name: data.chartType === 'trend' ? 'Vital Signs' : 'Vitals',
-      values: data.vitalsData.map((vital: any[]) => ({
-        date: vital[4],
-        value: vital[1],
-        unit: vital[2],
-        reference_range: vital[3]
-      }))
-    }]
-    title = 'Vitals Chart'
-  } else {
+  const currentVital = processedVitals[selectedVital]
+  const title = 'Patient Vitals'
+
+  if (!currentVital || !currentVital.values || currentVital.values.length === 0) {
     // Fallback - no valid data
     console.warn('VitalsChartNode: No valid vitals data provided', data)
     return (
@@ -82,57 +102,41 @@ const VitalsChartNode: React.FC<CanvasNodeProps> = ({ data }) => {
     )
   }
 
-  // Safety check - ensure we have valid data
-  if (!vitals || vitals.length === 0 || !vitals[0] || !vitals[0].values || vitals[0].values.length === 0) {
-    console.warn('VitalsChartNode: Invalid vitals data structure', vitals)
-    return (
-      <div className="canvas-node animate-fade-in">
-        <Handle 
-          type="target" 
-          position={Position.Top} 
-          style={{
-            backgroundColor: '#06b6d4',
-            border: '2px solid white',
-            boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)'
-          }}
-        />
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <AlertCircle className="w-12 h-12 text-amber-400 mx-auto mb-2 animate-pulse" />
-            <p className="text-white/80 font-medium">Invalid vitals data</p>
-            <p className="text-white/60 text-sm mt-1">Please check data format</p>
-          </div>
-        </div>
-        <Handle 
-          type="source" 
-          position={Position.Bottom} 
-          style={{
-            backgroundColor: '#8b5cf6',
-            border: '2px solid white',
-            boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
-          }}
-        />
-      </div>
-    )
-  }
-
   // Calculate vital health score
-  const calculateVitalScore = (vital: any) => {
-    const latestValue = parseFloat(vital.values[vital.values.length - 1].value)
+  const calculateVitalScore = (vitalData: any) => {
+    const latestValue = parseFloat(vitalData.values[vitalData.values.length - 1].value)
     
     // Example scoring logic for different vitals
-    if (vital.name.toLowerCase().includes('egfr')) {
+    if (vitalData.name.toLowerCase().includes('egfr')) {
       return latestValue >= 60 ? 85 : latestValue >= 30 ? 60 : 25
-    } else if (vital.name.toLowerCase().includes('blood pressure')) {
+    } else if (vitalData.name.toLowerCase().includes('blood pressure')) {
       return latestValue < 140 ? 80 : latestValue < 160 ? 60 : 30
     }
     return 75 // Default score
   }
 
+  // Get vital type icons
+  const getVitalIcon = (vitalType: string) => {
+    switch (vitalType) {
+      case 'blood_pressure':
+        return '🩸'
+      case 'heart_rate':
+        return '❤️'
+      case 'weight':
+        return '⚖️'
+      default:
+        return '📊'
+    }
+  }
+
   // Prepare enhanced chart data
-  const vital = vitals[0] // For demo, show first vital
-  const values = vital.values.map(v => parseFloat(v.value))
-  const hasWarning = values.some(v => v < 30) // Example warning logic
+  const vital = currentVital
+  const values = vital.values.map(v => parseFloat(v.value.toString()))
+  const hasWarning = values.some(v => {
+    if (selectedVital === 'blood_pressure') return v > 140
+    if (selectedVital === 'heart_rate') return v > 100 || v < 60
+    return false // No warning logic for weight yet
+  })
   
   const chartData = {
     labels: vital.values.map(v => new Date(v.date).toLocaleDateString('en-US', { 
@@ -177,7 +181,7 @@ const VitalsChartNode: React.FC<CanvasNodeProps> = ({ data }) => {
         displayColors: false,
         callbacks: {
           title: function(context: any) {
-            return `${vital.name}`
+            return `${vital.name} - ${context[0].label}`
           },
           label: function(context: any) {
             const value = vital.values[context.dataIndex]
@@ -244,8 +248,8 @@ const VitalsChartNode: React.FC<CanvasNodeProps> = ({ data }) => {
   }
 
   // Calculate trend
-  const firstValue = parseFloat(vital.values[0].value)
-  const lastValue = parseFloat(vital.values[vital.values.length - 1].value)
+  const firstValue = vital.values[0].value
+  const lastValue = vital.values[vital.values.length - 1].value
   const trend = lastValue > firstValue ? 'up' : lastValue < firstValue ? 'down' : 'stable'
   const trendPercent = Math.abs(((lastValue - firstValue) / firstValue) * 100)
 
@@ -304,7 +308,7 @@ const VitalsChartNode: React.FC<CanvasNodeProps> = ({ data }) => {
         }}
       />
       
-      {/* Enhanced Header with Health Score */}
+      {/* Enhanced Header with Health Score and Dropdown */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
           <div className="relative">
@@ -327,9 +331,27 @@ const VitalsChartNode: React.FC<CanvasNodeProps> = ({ data }) => {
             <h3 className="font-bold text-lg text-white text-gradient">
               {title}
             </h3>
-            <p className="text-sm text-white/80">
-              {vital.name} • Trend Analysis
-            </p>
+            
+            {/* Vital Type Dropdown */}
+            <div className="relative inline-block mt-1">
+              <select
+                value={selectedVital}
+                onChange={(e) => setSelectedVital(e.target.value as 'blood_pressure' | 'heart_rate' | 'weight')}
+                className="appearance-none bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-3 py-1 pr-8 text-sm text-white/90 hover:bg-white/20 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/30"
+              >
+                <option value="blood_pressure" className="bg-gray-800 text-white">
+                  🩸 Blood Pressure
+                </option>
+                <option value="heart_rate" className="bg-gray-800 text-white">
+                  ❤️ Heart Rate
+                </option>
+                <option value="weight" className="bg-gray-800 text-white">
+                  ⚖️ Weight
+                </option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/60 pointer-events-none" />
+            </div>
+            
             <div className={`flex items-center space-x-1 text-sm font-medium mt-1 ${getTrendColor()}`}>
               {getTrendIcon()}
               <span className="text-white/90">

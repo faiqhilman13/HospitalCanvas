@@ -4,7 +4,7 @@ import type { CanvasNodeProps } from '../../types'
 
 
 export default function AnalyticsReportNode({ data }: CanvasNodeProps) {
-  const { title = 'Population Analytics', role = 'analyst' } = data
+  const { title = 'Population Analytics', role = 'Analyst' } = data
   const [loading] = useState(false)
   const [activeTab, setActiveTab] = useState<'metrics' | 'patterns' | 'medications'>('metrics')
 
