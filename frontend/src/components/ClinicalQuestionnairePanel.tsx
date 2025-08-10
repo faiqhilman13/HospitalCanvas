@@ -507,15 +507,15 @@ const ClinicalQuestionnairePanel: React.FC<ClinicalQuestionnairePanelProps> = ({
   )
 
   return (
-    <div className="w-full max-w-4xl mx-auto glass-panel rounded-lg shadow-sm border border-white/20">
+    <div className="w-full h-full flex flex-col glass-panel rounded-lg shadow-sm border border-white/20">
       {/* Header */}
-      <div className="border-b border-white/20 p-4">
+      <div className="border-b border-white/20 p-4 flex-shrink-0">
         <h3 className="text-lg font-semibold text-white">Clinical Assessment for {patientName}</h3>
         <p className="text-sm text-white/80">Complete this structured clinical interview and examination guide</p>
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-white/20">
+      <div className="border-b border-white/20 flex-shrink-0">
         <nav className="flex">
           {[
             { id: 'subjective', name: 'Subjective', icon: User },
@@ -545,7 +545,7 @@ const ClinicalQuestionnairePanel: React.FC<ClinicalQuestionnairePanelProps> = ({
       </div>
 
       {/* Tab Content */}
-      <div className="p-4 max-h-96 overflow-y-auto">
+      <div className="p-4 flex-1 overflow-y-auto">
         {activeTab === 'subjective' && renderSubjectiveTab()}
         {activeTab === 'objective' && renderObjectiveTab()}
         {activeTab === 'review' && renderReviewTab()}

@@ -177,13 +177,13 @@ const LabResultsNode: React.FC<CanvasNodeProps> = ({ data }) => {
       <Handle type="target" position={Position.Top} />
       
       {/* Header */}
-      <div className="flex items-center space-x-2 mb-3">
+      <div className="flex items-center space-x-2 mb-3 flex-shrink-0">
         <TestTube className="w-5 h-5 text-white" />
         <h3 className="font-semibold text-white">Laboratory Results</h3>
       </div>
 
       {/* Lab Categories */}
-      <div className="space-y-2 max-h-80 overflow-auto">
+      <div className="space-y-2 flex-1 overflow-y-auto">
         {labs.map((category) => {
           const isExpanded = expandedCategories.has(category.category)
           const abnormalCount = category.tests.filter(test => test.flag !== 'normal').length
