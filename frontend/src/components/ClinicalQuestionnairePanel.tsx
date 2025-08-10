@@ -114,20 +114,20 @@ const ClinicalQuestionnairePanel: React.FC<ClinicalQuestionnairePanelProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => updateSubjectiveTemplate({ current_status: 'keeping_well' })}
-                  className={`p-2 text-sm rounded-md border ${
+                  className={`p-2 text-sm rounded-md border transition-all duration-200 ${
                     questionnaire.subjective_template.current_status === 'keeping_well'
-                      ? 'bg-green-50 border-green-300 text-green-800'
-                      : 'bg-white/5 border-white/30 text-white/80'
+                      ? 'bg-green-600 border-green-500 text-white shadow-lg'
+                      : 'bg-white/5 border-white/30 text-white/80 hover:bg-white/10'
                   }`}
                 >
                   Keeping well
                 </button>
                 <button
                   onClick={() => updateSubjectiveTemplate({ current_status: 'has_complaint' })}
-                  className={`p-2 text-sm rounded-md border ${
+                  className={`p-2 text-sm rounded-md border transition-all duration-200 ${
                     questionnaire.subjective_template.current_status === 'has_complaint'
-                      ? 'bg-yellow-50 border-yellow-300 text-yellow-800'
-                      : 'bg-white/5 border-white/30 text-white/80'
+                      ? 'bg-orange-600 border-orange-500 text-white shadow-lg'
+                      : 'bg-white/5 border-white/30 text-white/80 hover:bg-white/10'
                   }`}
                 >
                   Has complaint

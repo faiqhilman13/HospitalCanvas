@@ -194,7 +194,8 @@ def populate_uncle_tan():
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (qa_id, patient_id, qa["question"], qa["answer"], doc_id, qa["confidence"], datetime.now()))
     
-    # Canvas Layout - Pre-designed layout for Uncle Tan
+    # Canvas Layout - Pre-designed layout for Uncle Tan with proper spacing
+    # Node size is 500x600, so we need 550+ spacing horizontally and 650+ vertically
     canvas_nodes = [
         {
             "id": "patient-summary",
@@ -210,7 +211,7 @@ def populate_uncle_tan():
         {
             "id": "vitals-chart",
             "type": "vitalsChart", 
-            "position": {"x": 400, "y": 50},
+            "position": {"x": 600, "y": 50},
             "data": {
                 "chartType": "trend",
                 "vitalsData": vitals_data
@@ -219,7 +220,7 @@ def populate_uncle_tan():
         {
             "id": "lab-results",
             "type": "labResults",
-            "position": {"x": 50, "y": 300},
+            "position": {"x": 1150, "y": 50},
             "data": {
                 "labData": lab_data,
                 "abnormalFlags": ["creatinine", "bun", "egfr", "phosphorus", "hemoglobin", "parathyroid_hormone"]
@@ -228,7 +229,7 @@ def populate_uncle_tan():
         {
             "id": "document-viewer",
             "type": "documentViewer",
-            "position": {"x": 400, "y": 300},
+            "position": {"x": 50, "y": 700},
             "data": {
                 "documentName": "Nephrology Referral",
                 "documentUrl": "/documents/uncle_tan_referral.pdf",
@@ -238,7 +239,7 @@ def populate_uncle_tan():
         {
             "id": "ai-question-box",
             "type": "aiQuestionBox",
-            "position": {"x": 750, "y": 50},
+            "position": {"x": 600, "y": 700},
             "data": {
                 "lastQuestion": "What is the current kidney function status?",
                 "lastAnswer": qa_pairs[0]["answer"]
@@ -247,7 +248,7 @@ def populate_uncle_tan():
         {
             "id": "soap-generator",
             "type": "SOAPGenerator",
-            "position": {"x": 750, "y": 300},
+            "position": {"x": 1150, "y": 700},
             "data": {
                 "patientId": patient_id,
                 "patientName": "Uncle Tan"
@@ -256,7 +257,7 @@ def populate_uncle_tan():
         {
             "id": "patient-timeline",
             "type": "Timeline",
-            "position": {"x": 50, "y": 550},
+            "position": {"x": 50, "y": 1350},
             "data": {
                 "patientId": patient_id,
                 "patientName": "Uncle Tan"
@@ -293,7 +294,7 @@ def populate_mrs_chen():
         VALUES (?, ?, ?, ?, ?, ?)
     """, (summary_id, patient_id, "clinical", summary_text, 0.89, datetime.now()))
     
-    # Create comprehensive canvas layout for Mrs. Chen
+    # Create comprehensive canvas layout for Mrs. Chen with proper spacing
     canvas_nodes = [
         {
             "id": "patient-summary",
@@ -309,7 +310,7 @@ def populate_mrs_chen():
         {
             "id": "soap-generator",
             "type": "SOAPGenerator",
-            "position": {"x": 450, "y": 50},
+            "position": {"x": 600, "y": 50},
             "data": {
                 "patientId": patient_id,
                 "patientName": "Mrs. Chen"
@@ -318,7 +319,7 @@ def populate_mrs_chen():
         {
             "id": "patient-timeline",
             "type": "Timeline",
-            "position": {"x": 50, "y": 350},
+            "position": {"x": 50, "y": 700},
             "data": {
                 "patientId": patient_id,
                 "patientName": "Mrs. Chen"
@@ -355,7 +356,7 @@ def populate_mr_kumar():
         VALUES (?, ?, ?, ?, ?, ?)
     """, (summary_id, patient_id, "clinical", summary_text, 0.91, datetime.now()))
     
-    # Create comprehensive canvas layout for Mr. Kumar
+    # Create comprehensive canvas layout for Mr. Kumar with proper spacing
     canvas_nodes = [
         {
             "id": "patient-summary",
@@ -371,7 +372,7 @@ def populate_mr_kumar():
         {
             "id": "soap-generator",
             "type": "SOAPGenerator",
-            "position": {"x": 450, "y": 50},
+            "position": {"x": 600, "y": 50},
             "data": {
                 "patientId": patient_id,
                 "patientName": "Mr. Kumar"
@@ -380,7 +381,7 @@ def populate_mr_kumar():
         {
             "id": "patient-timeline",
             "type": "Timeline",
-            "position": {"x": 50, "y": 350},
+            "position": {"x": 50, "y": 700},
             "data": {
                 "patientId": patient_id,
                 "patientName": "Mr. Kumar"
