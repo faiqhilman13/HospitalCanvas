@@ -174,6 +174,10 @@ const ClinicalQuestionnairePanel: React.FC<ClinicalQuestionnairePanelProps> = ({
                     type="text"
                     value={med.medication_name}
                     onChange={(e) => updateMedicationCompliance(index, { medication_name: e.target.value })}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onMouseMove={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
                     className="font-medium text-sm bg-transparent border-none outline-none flex-1"
                     placeholder="Medication name"
                   />
@@ -182,6 +186,11 @@ const ClinicalQuestionnairePanel: React.FC<ClinicalQuestionnairePanelProps> = ({
                     onChange={(e) => updateMedicationCompliance(index, { 
                       actual_compliance: e.target.value as 'compliant' | 'partial' | 'non-compliant' 
                     })}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onMouseMove={(e) => e.stopPropagation()}
+                    onMouseUp={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
                     className="text-xs border border-white/30 rounded px-2 py-1"
                   >
                     <option value="compliant">Compliant</option>
@@ -195,6 +204,10 @@ const ClinicalQuestionnairePanel: React.FC<ClinicalQuestionnairePanelProps> = ({
                     type="text"
                     value={med.prescribed_dose}
                     onChange={(e) => updateMedicationCompliance(index, { prescribed_dose: e.target.value })}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onMouseMove={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
                     className="border-none outline-none bg-transparent"
                     placeholder="Prescribed dose"
                   />
@@ -211,6 +224,10 @@ const ClinicalQuestionnairePanel: React.FC<ClinicalQuestionnairePanelProps> = ({
                       onChange={(e) => updateMedicationCompliance(index, { 
                         missed_doses_per_week: parseInt(e.target.value) || 0 
                       })}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onMouseMove={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                      onFocus={(e) => e.stopPropagation()}
                       className="w-16 px-2 py-1 border border-white/30 rounded"
                     />
                   </div>

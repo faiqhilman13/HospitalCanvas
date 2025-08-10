@@ -268,6 +268,11 @@ const MedicationComplianceTracker: React.FC<MedicationComplianceTrackerProps> = 
                         onChange={(e) => handleReviewUpdate(review.medication_id, {
                           effectiveness_rating: parseInt(e.target.value)
                         })}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onMouseMove={(e) => e.stopPropagation()}
+                        onMouseUp={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                        onFocus={(e) => e.stopPropagation()}
                         className="w-full text-xs bg-white/10 text-white border border-white/30 rounded p-1 mt-1 focus:border-white/50 focus:outline-none"
                       >
                         <option value={1}>1 - Not effective</option>
@@ -285,6 +290,11 @@ const MedicationComplianceTracker: React.FC<MedicationComplianceTrackerProps> = 
                         onChange={(e) => handleReviewUpdate(review.medication_id, {
                           patient_satisfaction: parseInt(e.target.value)
                         })}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onMouseMove={(e) => e.stopPropagation()}
+                        onMouseUp={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                        onFocus={(e) => e.stopPropagation()}
                         className="w-full text-xs bg-white/10 text-white border border-white/30 rounded p-1 mt-1 focus:border-white/50 focus:outline-none"
                       >
                         <option value={1}>1 - Very unsatisfied</option>
@@ -303,6 +313,10 @@ const MedicationComplianceTracker: React.FC<MedicationComplianceTrackerProps> = 
                       onChange={(e) => handleReviewUpdate(review.medication_id, {
                         clinical_notes: e.target.value
                       })}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onMouseMove={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                      onFocus={(e) => e.stopPropagation()}
                       placeholder="Add clinical observations, plan changes, etc..."
                       className="w-full text-xs bg-white/10 text-white placeholder:text-white/50 border border-white/30 rounded p-2 mt-1 resize-none focus:border-white/50 focus:outline-none"
                       rows={2}
