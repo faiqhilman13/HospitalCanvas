@@ -76,7 +76,7 @@ const HeroPage = () => {
         </div>
 
         {/* Bento Grid Layout */}
-        <section className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 h-[800px] lg:h-[600px]">
+        <section className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 h-[1000px] lg:h-[800px]">
           {/* Main Canvas Demo Card */}
           <div className={`col-span-2 md:col-span-2 lg:col-span-2 row-span-1 transition-all duration-1000 delay-400 ${animationsStarted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
             <div className="relative rounded-3xl overflow-hidden shadow-2xl group h-full cursor-pointer" onClick={handleEnterCanvas}>
@@ -242,7 +242,7 @@ const HeroPage = () => {
         </section>
 
         {/* Bottom CTA */}
-        <div className={`text-center mt-24 transition-all duration-1000 delay-1000 ${animationsStarted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div className={`text-center mt-60 transition-all duration-1000 delay-1000 ${animationsStarted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
             <CalendarCheck className="w-4 h-4" />
             Demo available now
